@@ -1,0 +1,237 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+import { api } from '../services/api';
+import { Slider } from '../components/Slider';
+import { ProductCard } from '../components/ProductCard';
+import { Sparkles, ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
+
+export const Home: React.FC = () => {
+    const { direction, t, getLocalized } = useLanguage();
+    const [categories, setCategories] = useState<any[]>([]);
+    const [brands, setBrands] = useState<any[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
+    const [ads, setAds] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadHomeData() {
+            try {
+                const [catsRes, brandsRes, prodsRes, adsRes] = await Promise.all([
+                    api.categories.listPublic(),
+                    api.brands.listPublic(),
+                    api.products.listPublic(1, 8), // fetch top 8 products for homepage
+                    api.ads.listPublic(),
+                ]);
+
+                setCategories(catsRes.data.filter((c: any) => c.is_active));
+                setBrands(brandsRes.data);
+                setProducts(prodsRes.data);
+                setAds(adsRes.data.filter((a: any) => a.is_active));
+            } catch (err) {
+                console.error('Failed to load home feed', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadHomeData();
+    }, []);
+
+    return (
+        <div className="space-y-16 pb-20 select-none">
+
+            {/* 1. Hero Carousel section */}
+            <section className="px-4 md:px-8 mt-4">
+                <Slider />
+            </section>
+
+            {/* 2. Announcement Promo banner (if active ads exist) */}
+            {ads.length > 0 && (
+                <section className="px-4 md:px-8 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {ads.slice(0, 2).map((ad) => (
+                            <div
+                                key={ad.id}
+                                className="group relative h-[180px] md:h-[220px] rounded-3xl overflow-hidden border border-zinc-900 shadow-2xl bg-zinc-950 flex items-center p-8 md:p-12"
+                            >
+                                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-60" style={{ backgroundImage: `url('${ad.image_url}')` }} />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+                                <div className="relative z-10 max-w-xs space-y-2.5">
+                                    <span className="text-[10px] uppercase font-bold tracking-widest text-gold-400">Exclusive Promo</span>
+                                    <h3 className="text-lg md:text-xl font-bold text-white leading-snug line-clamp-2">
+                                        {getLocalized(ad, 'description') || 'Discover New Offerings'}
+                                    </h3>
+                                    <Link
+                                        to="/products?category=all"
+                                        className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-300 hover:text-gold-400 transition-colors uppercase tracking-wider"
+                                    >
+                                        <span>{direction === 'rtl' ? 'تسوق الان' : 'Shop Now'}</span>
+                                        <ArrowUpRight size={14} />
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* 3. Circular Category Navigation Showcase */}
+            <section className="max-w-7xl mx-auto px-4 md:px-8">
+                <div className="text-center space-y-2 mb-8">
+                    <h2 className="text-xl md:text-3xl font-extrabold tracking-wide uppercase text-zinc-100 font-sans">
+                        {t('shopCategory')}
+                    </h2>
+                    <div className="w-12 h-0.5 bg-gold-400 mx-auto" />
+                </div>
+
+                {loading ? (
+                    <div className="flex justify-center gap-6 overflow-x-auto py-4">
+                        {[1, 2, 3, 4, 5].map((idx) => (
+                            <div key={idx} className="w-24 md:w-32 flex flex-col items-center gap-3">
+                                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full shimmer" />
+                                <div className="w-12 h-3 bg-zinc-900 rounded shimmer" />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex items-start justify-center gap-6 md:gap-10 overflow-x-auto pb-4 scrollbar-thin">
+                        {categories.filter(c => !c.parent_id).map((cat) => (
+                            <Link
+                                key={cat.id}
+                                to={`/products?category=${cat.id}`}
+                                className="flex flex-col items-center gap-3 text-center group flex-shrink-0 cursor-pointer"
+                            >
+                                <div className="w-18 h-18 md:w-24 md:h-24 rounded-full border border-zinc-900 group-hover:border-gold-400/60 bg-zinc-950 flex items-center justify-center overflow-hidden transition-all duration-300 transform group-hover:scale-105 shadow-2xl relative">
+                                    {cat.image_url ? (
+                                        <img
+                                            src={cat.image_url}
+                                            alt={getLocalized(cat, 'name')}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Sparkles size={24} className="text-zinc-700" />
+                                    )}
+                                </div>
+                                <span className="text-xs md:text-sm text-zinc-400 group-hover:text-gold-400 transition-colors font-medium">
+                                    {getLocalized(cat, 'name')}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* 4. Products Grid Showcase */}
+            <section className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
+                <div className="flex justify-between items-end border-b border-zinc-900 pb-4">
+                    <div className="space-y-1">
+                        <h2 className="text-xl md:text-3xl font-extrabold tracking-wide uppercase text-zinc-100 font-sans">
+                            {t('featuredProducts')}
+                        </h2>
+                        <p className="text-zinc-500 text-xs md:text-sm font-light">
+                            Premium selections curated by our beauty experts
+                        </p>
+                    </div>
+                    <Link
+                        to="/products?category=all"
+                        className="text-xs md:text-sm font-bold text-gold-400 hover:text-gold-500 flex items-center gap-1 transition-colors uppercase tracking-wider"
+                    >
+                        <span>{direction === 'rtl' ? 'عرض الكل' : 'View All'}</span>
+                        {direction === 'rtl' ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                    </Link>
+                </div>
+
+                {loading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[1, 2, 4, 8].map((idx) => (
+                            <div key={idx} className="aspect-[3/4] bg-zinc-950 shimmer border border-zinc-900 rounded-2xl" />
+                        ))}
+                    </div>
+                ) : products.length === 0 ? (
+                    <div className="text-center py-12 border border-dashed border-zinc-800 rounded-2xl">
+                        <p className="text-zinc-500">{t('noProducts')}</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                        {products.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* 5. Luxury Brand Showcase banner */}
+            <section className="max-w-7xl mx-auto px-4 md:px-8 border-t border-zinc-900 pt-16">
+                <div className="text-center space-y-2 mb-10">
+                    <h2 className="text-xl md:text-3xl font-extrabold tracking-wide uppercase text-zinc-100 font-sans">
+                        {t('shopBrand')}
+                    </h2>
+                    <div className="w-12 h-0.5 bg-gold-400 mx-auto" />
+                </div>
+
+                {loading ? (
+                    <div className="flex justify-center gap-12 py-4 overflow-x-auto">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="w-24 h-12 bg-zinc-900 shimmer rounded-lg" />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+                        {brands.map((brand) => (
+                            <Link
+                                key={brand.id}
+                                to={`/products?brand=${brand.id}`}
+                                className="h-10 md:h-14 flex items-center justify-center opacity-40 hover:opacity-100 transition-all duration-300 filter grayscale hover:grayscale-0 cursor-pointer transform hover:scale-105"
+                            >
+                                {brand.image_url ? (
+                                    <img
+                                        src={brand.image_url}
+                                        alt={brand.name}
+                                        className="max-h-full max-w-[120px] md:max-w-[180px] object-contain"
+                                    />
+                                ) : (
+                                    <span className="text-lg md:text-2xl font-extrabold font-sans tracking-widest text-[#f5ecd2]">{brand.name}</span>
+                                )}
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* 6. Premium Highlight Section (Sephora/Dior feel) */}
+            <section className="max-w-5xl mx-auto px-4 md:px-8 select-none">
+                <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-zinc-950 via-[#0d0d12] to-zinc-950 border border-zinc-900 p-8 md:p-16 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+                    <div className="absolute w-[200px] h-[200px] rounded-full bg-gold-400/5 filter blur-3xl right-6 top-6 pointer-events-none" />
+                    <div className="space-y-4 max-w-md">
+                        <span className="text-[10px] uppercase font-extrabold tracking-widest text-gold-400">Since 2026</span>
+                        <h2 className="text-2xl md:text-4xl font-extrabold text-[#f5ecd2] leading-tight font-sans">
+                            HISTERIA SIGNATURE LUXURY OUD
+                        </h2>
+                        <p className="text-zinc-400 text-xs md:text-sm leading-relaxed">
+                            {direction === 'rtl'
+                                ? 'مزيج فاخر من دهن العود المعتق وزهور الياسمين البرية مع نوتات العنبر الدافئ لتمنحك رائحة لا تنسى تدوم طوال اليوم.'
+                                : 'Formulated with age-old aged Oud oil, blooming wild jasmine petals, and dry notes of amber wood, our signature perfume offers an unforgettable presence.'
+                            }
+                        </p>
+                        <div className="pt-2">
+                            <Link
+                                to="/products?category=all"
+                                className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition-transform duration-300 hover:scale-105 inline-block cursor-pointer uppercase tracking-wider"
+                            >
+                                {direction === 'rtl' ? 'تصفح المجموعة' : 'Explore Collections'}
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="w-full md:w-1/2 aspect-square rounded-2xl overflow-hidden bg-zinc-900/60 border border-zinc-800">
+                        <img
+                            src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=630&q=80"
+                            alt="Luxury Oud Perfume"
+                            className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                        />
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    );
+};

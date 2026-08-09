@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@theme {
+  --font-sans: 'Outfit', 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-arabic: 'Cairo', sans-serif;
+
+  --color-gold-50: #fbf9f4;
+  --color-gold-100: #f4ecdf;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #b89728;
+  --color-gold-600: #9e7f1e;
+  --color-gold-900: #4a3b0b;
+}
+
+body {
+  font-family: 'Outfit', 'Cairo', system-ui, -apple-system, sans-serif;
+  background-color: #08080a;
+  color: #f3f4f6;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar and glassmorphism elements */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #08080a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #272730;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f50;
+}
+
+/* Custom styles for animations and high-end Sephora-style components */
+.shimmer {
+  background: linear-gradient(90deg, #16161a 25%, #22222a 50%, #16161a 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #9e7f1e 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #b89728 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Admin form inputs & selects */
+.admin-input {
+  width: 100%;
+  background-color: #0d0d11;
+  border: 1px solid #27272a;
+  color: #e4e4e7;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+
+.admin-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 1px #d4af3740;
+}
+
+.admin-input option {
+  background-color: #0d0d11;
+  color: #e4e4e7;
+}

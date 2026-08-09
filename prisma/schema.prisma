@@ -1,0 +1,140 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  order       Int
+  image_url   String?
+  is_active   Boolean    @default(true)
+  parent_id   String?    @db.Uuid
+  arabic      String?
+  hebrew      String?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  parent      Category?  @relation("CategoryHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+
+  @@index([parent_id])
+  @@index([is_active])
+}
+
+model Product {
+  id          String          @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  category_id String          @db.Uuid
+  brand_id    String          @db.Uuid
+  arabic      String?
+  hebrew      String?
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  category    Category        @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  brand       Brand           @relation(fields: [brand_id], references: [id], onDelete: Restrict)
+  options     ProductOption[]
+  images      ProductImage[]
+
+  @@index([category_id])
+  @@index([brand_id])
+}
+
+model ProductOption {
+  id         String   @id @default(uuid()) @db.Uuid
+  product_id String   @db.Uuid
+  color_name String?
+  size       String?
+  price      Decimal  @db.Decimal(10, 2)
+  color      String?
+  image_url  String?
+  arabic     String?
+  hebrew     String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+}
+
+model ProductImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  product_id String   @db.Uuid
+  image_url  String
+  created_at DateTime @default(now())
+
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+}
+
+model Brand {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  order      Int
+  link       String?
+  image_url  String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  products   Product[]
+}
+
+model Coupon {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  code        String    @unique
+  from_date   DateTime?
+  to_date     DateTime?
+  amount      Decimal?  @db.Decimal(10, 2)
+  percentage  Int?
+  usage_count Int       @default(0)
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@index([code])
+}
+
+model Slider {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  interval    Int      @default(5000)
+  image_url   String
+  is_active   Boolean  @default(true)
+  arabic      String?
+  hebrew      String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model AdminUser {
+  id            String   @id @default(uuid()) @db.Uuid
+  username      String   @unique
+  password_hash String
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+model Ad {
+  id            String   @id @default(uuid()) @db.Uuid
+  description   String?
+  display_order Int      @default(0)
+  image_url     String
+  is_active     Boolean  @default(true)
+  arabic        String?
+  hebrew        String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
