@@ -9,6 +9,7 @@ interface ProductOption {
     id?: string;
     size?: string;
     color_name?: string;
+    shade?: string;
     color?: string;
     price: number;
     image_url?: string;
@@ -38,7 +39,7 @@ const emptyForm: ProductFormState = {
 };
 
 const emptyOption: ProductOption = {
-    size: '', color_name: '', color: '', price: 0, image_url: '', arabic: '', hebrew: ''
+    size: '', color_name: '', shade: '', color: '', price: 0, image_url: '', arabic: '', hebrew: ''
 };
 
 export const AdminProducts: React.FC = () => {
@@ -98,7 +99,7 @@ export const AdminProducts: React.FC = () => {
                 hebrew: p.hebrew || '',
                 options: (p.options || []).map((o: any) => ({
                     id: o.id, size: o.size || '', color_name: o.color_name || '',
-                    color: o.color || '', price: Number(o.price), image_url: o.image_url || '',
+                    shade: o.shade || '', color: o.color || '', price: Number(o.price), image_url: o.image_url || '',
                     arabic: o.arabic || '', hebrew: o.hebrew || '',
                 })),
                 images: (p.images || []).map((img: any) => ({ id: img.id, image_url: img.image_url })),
@@ -173,12 +174,14 @@ export const AdminProducts: React.FC = () => {
                     if (opt.id) {
                         await api.productOptions.update(opt.id, {
                             size: opt.size || null, color_name: opt.color_name || null,
+                            shade: opt.shade || null,
                             color: opt.color || null, price: opt.price,
                             image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
                         });
                     } else {
                         await api.productOptions.create({
                             product_id: productId, size: opt.size || null, color_name: opt.color_name || null,
+                            shade: opt.shade || null,
                             color: opt.color || null, price: opt.price,
                             image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
                         });
@@ -200,6 +203,7 @@ export const AdminProducts: React.FC = () => {
                 for (const opt of form.options) {
                     await api.productOptions.create({
                         product_id: productId, size: opt.size || null, color_name: opt.color_name || null,
+                        shade: opt.shade || null,
                         color: opt.color || null, price: opt.price,
                         image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
                     });
@@ -372,7 +376,7 @@ export const AdminProducts: React.FC = () => {
                                                 <div className="flex items-center justify-between px-4 py-3 cursor-pointer"
                                                     onClick={() => setExpandedOptions(prev => ({ ...prev, [key]: !isExpanded }))}>
                                                     <span className="text-xs font-bold text-zinc-300">
-                                                        Option {i + 1}: {[opt.size, opt.color_name].filter(Boolean).join(' / ') || 'New Option'}
+                                                        Option {i + 1}: {[opt.color_name, opt.shade, opt.size].filter(Boolean).join(' - ') || 'New Option'}
                                                         {opt.price > 0 && <span className="text-gold-400 ml-2 font-sans">₪{opt.price}</span>}
                                                     </span>
                                                     <div className="flex items-center gap-2">
@@ -389,7 +393,10 @@ export const AdminProducts: React.FC = () => {
                                                             <input type="number" min="0" step="0.01" required value={opt.price || ''} onChange={e => handleOptionChange(i, 'price', Number(e.target.value))} className="admin-input" />
                                                         </FormField>
                                                         <FormField label={t('colorNameOption')}>
-                                                            <input type="text" value={opt.color_name || ''} onChange={e => handleOptionChange(i, 'color_name', e.target.value)} className="admin-input" placeholder="Rose Gold" />
+                                                            <input type="text" value={opt.color_name || ''} onChange={e => handleOptionChange(i, 'color_name', e.target.value)} className="admin-input" placeholder="Red / أحمر" />
+                                                        </FormField>
+                                                        <FormField label={t('shadeOption')}>
+                                                            <input type="text" value={opt.shade || ''} onChange={e => handleOptionChange(i, 'shade', e.target.value)} className="admin-input" placeholder="Dark Red / أحمر غامق" />
                                                         </FormField>
                                                         <FormField label={t('colorOptionHex')}>
                                                             <div className="flex gap-2 items-center">

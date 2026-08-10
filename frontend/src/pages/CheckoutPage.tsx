@@ -145,11 +145,18 @@ export const CheckoutPage: React.FC = () => {
                         <div>🛍️ *{direction === 'rtl' ? 'طلب جديد من متجر هستيريا' : 'New Order from Histeria Store'}*</div>
                         <div className="text-emerald-400/70">👤 {fullname || (direction === 'rtl' ? 'الاسم الكامل' : 'Full Name')}</div>
                         <div className="text-emerald-400/70">📞 {phone || '...'}</div>
-                        {selectedItems.slice(0, 2).map((item, i) => (
-                            <div key={i} className="text-emerald-400/60">
-                                {i + 1}. *{getLocalized(item.product, 'name')}* — ₪{item.option.price} × {item.quantity}
-                            </div>
-                        ))}
+                        {selectedItems.slice(0, 2).map((item, i) => {
+                            const optStr = [
+                                item.option.color_name ? getLocalized(item.option, 'color_name') : '',
+                                item.option.shade ? getLocalized(item.option, 'shade') : '',
+                                item.option.size ? getLocalized(item.option, 'size') : ''
+                            ].filter(Boolean).join(' | ');
+                            return (
+                                <div key={i} className="text-emerald-400/60">
+                                    {i + 1}. *{getLocalized(item.product, 'name')}*{optStr ? ` (${optStr})` : ''} — ₪{item.option.price} × {item.quantity}
+                                </div>
+                            );
+                        })}
                         {selectedItems.length > 2 && <div className="text-emerald-500/50">...and {selectedItems.length - 2} more items</div>}
                         <div className="border-t border-emerald-900/30 pt-1.5 font-bold text-emerald-300">
                             *{t('total')}: ₪{total.toFixed(2)}*
@@ -177,7 +184,8 @@ export const CheckoutPage: React.FC = () => {
                             const name = getLocalized(item.product, 'name');
                             const size = item.option.size ? getLocalized(item.option, 'size') : '';
                             const color = item.option.color_name ? getLocalized(item.option, 'color_name') : '';
-                            const optLabel = [size, color].filter(Boolean).join(' / ');
+                            const shade = item.option.shade ? getLocalized(item.option, 'shade') : '';
+                            const optLabel = [color, shade, size].filter(Boolean).join(' / ');
                             const img = item.option.image_url || item.product.images?.[0]?.image_url || '';
 
                             return (

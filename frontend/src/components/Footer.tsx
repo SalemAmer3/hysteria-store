@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
-import { Phone, MapPin, Mail, Instagram, MessageCircle, Facebook } from 'lucide-react';
+import { Phone, MapPin, Instagram, MessageCircle, Facebook } from 'lucide-react';
 
 export const Footer: React.FC = () => {
     const { direction, t, getLocalized } = useLanguage();

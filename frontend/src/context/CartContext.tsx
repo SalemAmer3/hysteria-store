@@ -14,6 +14,7 @@ export interface CartItem {
         id: string;
         size?: string | null;
         color_name?: string | null;
+        shade?: string | null;
         color?: string | null;
         price: number;
         arabic?: string | null;
@@ -143,6 +144,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         id: option.id,
                         size: option.size,
                         color_name: option.color_name,
+                        shade: option.shade,
                         color: option.color,
                         price: Number(option.price),
                         arabic: option.arabic,
@@ -305,10 +307,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const prodName = getLocalized(item.product, 'name');
             const sizeName = item.option.size ? getLocalized(item.option, 'size') : '';
             const colorName = item.option.color_name ? getLocalized(item.option, 'color_name') : '';
+            const shadeName = item.option.shade ? getLocalized(item.option, 'shade') : '';
 
             const optionDetails = [
-                sizeName ? `${t('size')}: ${sizeName}` : '',
-                colorName ? `${t('color')}: ${colorName}` : ''
+                colorName ? `${t('color')}: ${colorName}` : '',
+                shadeName ? `${t('shade')}: ${shadeName}` : '',
+                sizeName ? `${t('size')}: ${sizeName}` : ''
             ].filter(Boolean).join(' | ');
 
             message += `${index + 1}. *${prodName}*\n`;

@@ -8,6 +8,7 @@ import { getPaginationQuery, buildPaginatedResponse } from '../../lib/pagination
 const productOptionSchema = z.object({
     product_id: z.string().uuid('Invalid product_id format'),
     color_name: z.string().nullable().optional(),
+    shade: z.string().nullable().optional(),
     size: z.string().nullable().optional(),
     price: z.preprocess((val) => (val === undefined || val === '' || val === null ? NaN : Number(val)), z.number().positive('Price must be greater than 0')),
     color: z.string().nullable().optional(),
@@ -72,6 +73,7 @@ export class ProductOptionController {
                 data: {
                     product_id: body.product_id,
                     color_name: body.color_name ?? null,
+                    shade: body.shade ?? null,
                     size: body.size ?? null,
                     price: body.price,
                     color: body.color ?? null,
@@ -106,6 +108,7 @@ export class ProductOptionController {
                 data: {
                     product_id: body.product_id ?? option.product_id,
                     color_name: body.color_name !== undefined ? body.color_name : option.color_name,
+                    shade: body.shade !== undefined ? body.shade : option.shade,
                     size: body.size !== undefined ? body.size : option.size,
                     price: body.price ?? option.price,
                     color: body.color !== undefined ? body.color : option.color,

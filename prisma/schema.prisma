@@ -52,6 +52,7 @@ model ProductOption {
   id         String   @id @default(uuid()) @db.Uuid
   product_id String   @db.Uuid
   color_name String?
+  shade      String?
   size       String?
   price      Decimal  @db.Decimal(10, 2)
   color      String?

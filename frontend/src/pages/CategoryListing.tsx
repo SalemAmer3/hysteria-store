@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
-import { SlidersHorizontal, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SlidersHorizontal, Trash2 } from 'lucide-react';
 
 export const CategoryListing: React.FC = () => {
     const { getLocalized, direction, t } = useLanguage();

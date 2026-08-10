@@ -81,7 +81,6 @@ export const Slider: React.FC = () => {
     const currentSlider = sliders[currentIndex];
     const title = getLocalized(currentSlider, 'name');
     const details = getLocalized(currentSlider, 'description');
-    const imageUrl = currentSlider.image_url;
 
     return (
         <div className="relative w-full aspect-[16/9] md:aspect-[21/9] min-h-[300px] md:min-h-[480px] overflow-hidden rounded-3xl bg-zinc-950 border border-zinc-900 select-none group">

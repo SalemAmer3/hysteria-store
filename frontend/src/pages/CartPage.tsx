@@ -103,8 +103,9 @@ export const CartPage: React.FC = () => {
                         const itemName = getLocalized(item.product, 'name');
                         const itemSize = item.option.size ? getLocalized(item.option, 'size') : '';
                         const itemColor = item.option.color_name ? getLocalized(item.option, 'color_name') : '';
+                        const itemShade = item.option.shade ? getLocalized(item.option, 'shade') : '';
 
-                        const optionSubtitle = [itemSize, itemColor].filter(Boolean).join(' | ');
+                        const optionSubtitle = [itemColor, itemShade, itemSize].filter(Boolean).join(' | ');
                         const primaryImage = item.option.image_url || (item.product.images && item.product.images[0]?.image_url) || '';
 
                         return (
