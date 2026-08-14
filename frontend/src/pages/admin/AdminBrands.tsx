@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/AdminLayout';
 import { ImageUpload } from '../../components/ImageUpload';
 import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../services/api';
-import { Plus, Pencil, Trash2, X, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Sparkles, Search } from 'lucide-react';
 
 const emptyForm = { name: '', description: '', image_url: '' };
 
@@ -16,6 +16,7 @@ export const AdminBrands: React.FC = () => {
     const [form, setForm] = useState({ ...emptyForm });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -59,10 +60,27 @@ export const AdminBrands: React.FC = () => {
                 </div>
                 {error && <div className="p-4 bg-rose-950/20 border border-rose-900/40 text-rose-400 text-xs rounded-xl">{error}</div>}
 
+                {/* Search bar */}
+                <div className="relative">
+                    <Search size={15} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 ${direction === 'rtl' ? 'right-3' : 'left-3'}`} />
+                    <input
+                        type="text"
+                        placeholder={direction === 'rtl' ? 'ابحث عن ماركة...' : 'Search brands...'}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className={`w-full bg-zinc-900/60 border border-zinc-800 text-zinc-200 placeholder-zinc-600 rounded-xl py-2.5 text-sm focus:outline-none focus:border-gold-400 transition-colors ${direction === 'rtl' ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
+                    />
+                    {search && (
+                        <button onClick={() => setSearch('')} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer ${direction === 'rtl' ? 'left-3' : 'right-3'}`}>
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {loading
                         ? Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-square bg-zinc-950 border border-zinc-900 rounded-2xl shimmer" />)
-                        : brands.map(brand => (
+                        : brands.filter(b => b.name?.toLowerCase().includes(search.toLowerCase())).map(brand => (
                             <div key={brand.id} className="group bg-[#0d0d11]/50 border border-zinc-900 hover:border-zinc-800 rounded-2xl p-5 flex flex-col items-center gap-4 text-center transition-all">
                                 <div className="w-24 h-16 flex items-center justify-center">
                                     {brand.image_url

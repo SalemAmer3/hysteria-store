@@ -9,7 +9,7 @@ const productSchema = z.object({
     name: z.string().min(1, 'Product name is required'),
     description: z.string().nullable().optional(),
     category_id: z.string().uuid('Invalid category_id format'),
-    brand_id: z.string().uuid('Invalid brand_id format'),
+    brand_id: z.string().uuid('Invalid brand_id format').nullable().optional(),
     arabic: z.string().nullable().optional(),
     hebrew: z.string().nullable().optional(),
 });
@@ -91,17 +91,17 @@ export class ProductController {
             const body = productSchema.parse(req.body);
             const [categoryExists, brandExists] = await Promise.all([
                 prisma.category.findUnique({ where: { id: body.category_id } }),
-                prisma.brand.findUnique({ where: { id: body.brand_id } }),
+                body.brand_id ? prisma.brand.findUnique({ where: { id: body.brand_id } }) : Promise.resolve(true),
             ]);
             if (!categoryExists) throw new CustomError(400, 'Referenced category does not exist');
-            if (!brandExists) throw new CustomError(400, 'Referenced brand does not exist');
+            if (body.brand_id && !brandExists) throw new CustomError(400, 'Referenced brand does not exist');
 
             const product = await prisma.product.create({
                 data: {
                     name: body.name,
                     description: body.description ?? null,
                     category_id: body.category_id,
-                    brand_id: body.brand_id,
+                    brand_id: body.brand_id ?? null,
                     arabic: body.arabic ?? null,
                     hebrew: body.hebrew ?? null,
                 },

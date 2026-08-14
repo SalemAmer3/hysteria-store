@@ -3,12 +3,14 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Search, ShoppingBag, Heart, User, Menu, X, LogOut } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { Search, ShoppingBag, Heart, User, Menu, X, LogOut, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
     const { language, setLanguage, direction, t } = useLanguage();
     const { cart, wishlist } = useCart();
     const { isAuthenticated, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -157,13 +159,26 @@ export const Navbar: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2.5 text-zinc-300 hover:text-gold-400 transition-colors cursor-pointer"
+                            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        >
+                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                        </button>
+
                         {/* Wishlist Link */}
                         <Link
                             to="/wishlist"
                             className="p-2.5 text-zinc-300 hover:text-rose-500 transition-colors relative"
                             title={t('wishlist')}
                         >
-                            <Heart size={22} className={wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''} />
+                            {/* className="p-2.5 text-zinc-300 hover:text-rose-500 transition-colors relative"
+                            title={t('wishlist')}
+                        > */}
+                            <Heart size={22} 
+                            className={wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : ''} />
                             {wishlist.length > 0 && (
                                 <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 bg-rose-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">
                                     {wishlist.length}

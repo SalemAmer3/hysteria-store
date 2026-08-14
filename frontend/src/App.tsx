@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Layout components
 import { AnnouncementBar } from './components/AnnouncementBar';
@@ -42,10 +43,11 @@ const StoreLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 function App() {
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <CartProvider>
-          <Router>
-            <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Router>
+              <Routes>
               {/* Public store routes */}
               <Route path="/" element={<StoreLayout><Home /></StoreLayout>} />
               <Route path="/products" element={<StoreLayout><CategoryListing /></StoreLayout>} />
@@ -72,6 +74,7 @@ function App() {
           </Router>
         </CartProvider>
       </AuthProvider>
+      </ThemeProvider>
     </LanguageProvider>
   );
 }

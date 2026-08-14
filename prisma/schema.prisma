@@ -33,14 +33,14 @@ model Product {
   name        String
   description String?
   category_id String          @db.Uuid
-  brand_id    String          @db.Uuid
+  brand_id    String?         @db.Uuid
   arabic      String?
   hebrew      String?
   created_at  DateTime        @default(now())
   updated_at  DateTime        @updatedAt
 
   category    Category        @relation(fields: [category_id], references: [id], onDelete: Restrict)
-  brand       Brand           @relation(fields: [brand_id], references: [id], onDelete: Restrict)
+  brand       Brand?          @relation(fields: [brand_id], references: [id], onDelete: SetNull)
   options     ProductOption[]
   images      ProductImage[]
 

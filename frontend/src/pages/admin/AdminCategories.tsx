@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/AdminLayout';
 import { ImageUpload } from '../../components/ImageUpload';
 import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../services/api';
-import { Plus, Pencil, Trash2, X, FolderOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, FolderOpen, Search } from 'lucide-react';
 
 const emptyForm = {
     name: '', description: '', parent_id: '', image_url: '', order: 0,
@@ -22,6 +22,7 @@ export const AdminCategories: React.FC = () => {
     const [form, setForm] = useState({ ...emptyForm });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -87,10 +88,27 @@ export const AdminCategories: React.FC = () => {
 
                 {error && <div className="p-4 bg-rose-950/20 border border-rose-900/40 text-rose-400 text-xs rounded-xl">{error}</div>}
 
+                {/* Search bar */}
+                <div className="relative">
+                    <Search size={15} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 ${direction === 'rtl' ? 'right-3' : 'left-3'}`} />
+                    <input
+                        type="text"
+                        placeholder={direction === 'rtl' ? 'ابحث عن قسم...' : 'Search categories...'}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className={`w-full bg-zinc-900/60 border border-zinc-800 text-zinc-200 placeholder-zinc-600 rounded-xl py-2.5 text-sm focus:outline-none focus:border-gold-400 transition-colors ${direction === 'rtl' ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
+                    />
+                    {search && (
+                        <button onClick={() => setSearch('')} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer ${direction === 'rtl' ? 'left-3' : 'right-3'}`}>
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+
                 <div className="space-y-2">
                     {loading
                         ? Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 bg-zinc-950 border border-zinc-900 rounded-xl shimmer" />)
-                        : categories.map(cat => (
+                        : categories.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()) || c.arabic?.includes(search)).map(cat => (
                             <div key={cat.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
                                     {cat.image_url

@@ -210,8 +210,9 @@ export const ProductDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
 
                 {/* Left Side: Images Viewer Gallery */}
-                <div className="space-y-4">
-                    <div className="aspect-[4/5] w-full rounded-3xl overflow-hidden bg-zinc-950 border border-zinc-900 relative shadow-2xl">
+                <div className="space-y-3">
+                    {/* Main image */}
+                    <div className="aspect-square w-full rounded-3xl overflow-hidden bg-zinc-950 border border-zinc-900 relative shadow-2xl">
                         <img
                             src={activeImage}
                             alt={name}
@@ -224,17 +225,22 @@ export const ProductDetail: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Thumbnails */}
+                    {/* Thumbnails — same 1:1 ratio */}
                     {allImages.length > 1 && (
-                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none justify-center">
+                        <div className="grid gap-2"
+                            style={{ gridTemplateColumns: `repeat(${Math.min(allImages.length, 5)}, 1fr)` }}
+                        >
                             {allImages.map((imgUrl, i) => (
                                 <button
                                     key={i}
                                     onClick={() => setActiveImage(imgUrl)}
-                                    className={`w-16 h-20 md:w-20 md:h-24 rounded-xl overflow-hidden flex-shrink-0 border-2 bg-zinc-950 transition-all cursor-pointer ${activeImage === imgUrl ? 'border-gold-400 scale-95 shadow-md' : 'border-zinc-900 opacity-60 hover:opacity-100'
-                                        }`}
+                                    className={`aspect-square w-full rounded-xl overflow-hidden border-2 bg-zinc-950 transition-all cursor-pointer ${
+                                        activeImage === imgUrl
+                                            ? 'border-gold-400 shadow-md shadow-gold-400/20'
+                                            : 'border-zinc-900 opacity-60 hover:opacity-100 hover:border-zinc-700'
+                                    }`}
                                 >
-                                    <img src={imgUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                                    <img src={imgUrl} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>

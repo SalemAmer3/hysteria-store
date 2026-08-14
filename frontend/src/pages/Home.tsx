@@ -170,28 +170,22 @@ export const Home: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center gap-12 py-4 overflow-x-auto">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="w-24 h-12 bg-zinc-900 shimmer rounded-lg" />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-24 bg-zinc-900 shimmer rounded-2xl" />
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {brands.map((brand) => (
                             <Link
                                 key={brand.id}
                                 to={`/products?brand=${brand.id}`}
-                                className="h-10 md:h-14 flex items-center justify-center opacity-40 hover:opacity-100 transition-all duration-300 filter grayscale hover:grayscale-0 cursor-pointer transform hover:scale-105"
+                                className="group flex items-center justify-center p-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 hover:border-gold-400/50 hover:bg-zinc-900 transition-all duration-300 cursor-pointer hover:scale-[1.03] hover:shadow-lg hover:shadow-gold-400/5"
                             >
-                                {brand.image_url ? (
-                                    <img
-                                        src={brand.image_url}
-                                        alt={brand.name}
-                                        className="max-h-full max-w-[120px] md:max-w-[180px] object-contain"
-                                    />
-                                ) : (
-                                    <span className="text-lg md:text-2xl font-extrabold font-sans tracking-widest text-[#f5ecd2]">{brand.name}</span>
-                                )}
+                                <span className="text-sm md:text-base font-extrabold font-sans tracking-widest text-zinc-300 group-hover:text-gold-400 transition-colors uppercase text-center">
+                                    {brand.name}
+                                </span>
                             </Link>
                         ))}
                     </div>

@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/AdminLayout';
 import { ImageUpload } from '../../components/ImageUpload';
 import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../services/api';
-import { Plus, Pencil, Trash2, X, ChevronDown, ChevronUp, PackageSearch } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, ChevronDown, ChevronUp, PackageSearch, Search } from 'lucide-react';
 
 interface ProductOption {
     id?: string;
@@ -56,6 +56,32 @@ export const AdminProducts: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
+    const [translating, setTranslating] = useState(false);
+    const [search, setSearch] = useState('');
+
+    // Auto-translate description using MyMemory free API
+    const autoTranslate = async () => {
+        if (!form.description.trim()) return;
+        setTranslating(true);
+        try {
+            const [arRes, heRes] = await Promise.all([
+                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.description)}&langpair=en|ar`),
+                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.description)}&langpair=en|he`),
+            ]);
+            const [arData, heData] = await Promise.all([arRes.json(), heRes.json()]);
+            const arText = arData?.responseData?.translatedText || '';
+            const heText = heData?.responseData?.translatedText || '';
+            setForm(f => ({
+                ...f,
+                arabic: arText || f.arabic,
+                hebrew: heText || f.hebrew,
+            }));
+        } catch {
+            // silently fail — user can fill manually
+        } finally {
+            setTranslating(false);
+        }
+    };
 
     const loadProducts = useCallback(async () => {
         setLoading(true);
@@ -143,7 +169,7 @@ export const AdminProducts: React.FC = () => {
             if (editProduct) {
                 await api.products.update(editProduct.id, {
                     name: form.name, description: form.description || null,
-                    category_id: form.category_id, brand_id: form.brand_id,
+                    category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
                 });
                 productId = editProduct.id;
@@ -190,7 +216,7 @@ export const AdminProducts: React.FC = () => {
             } else {
                 const res = await api.products.create({
                     name: form.name, description: form.description || null,
-                    category_id: form.category_id, brand_id: form.brand_id,
+                    category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
                 });
                 productId = res.data.id;
@@ -233,6 +259,23 @@ export const AdminProducts: React.FC = () => {
                     </button>
                 </div>
 
+                {/* Search bar */}
+                <div className="relative">
+                    <Search size={15} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 ${direction === 'rtl' ? 'right-3' : 'left-3'}`} />
+                    <input
+                        type="text"
+                        placeholder={direction === 'rtl' ? 'ابحث عن منتج...' : 'Search products...'}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className={`w-full bg-zinc-900/60 border border-zinc-800 text-zinc-200 placeholder-zinc-600 rounded-xl py-2.5 text-sm focus:outline-none focus:border-gold-400 transition-colors ${direction === 'rtl' ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
+                    />
+                    {search && (
+                        <button onClick={() => setSearch('')} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer ${direction === 'rtl' ? 'left-3' : 'right-3'}`}>
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+
                 {error && <div className="p-4 bg-rose-950/20 border border-rose-900/40 text-rose-400 text-xs rounded-xl">{error}</div>}
 
                 {/* Products List */}
@@ -241,10 +284,10 @@ export const AdminProducts: React.FC = () => {
                         Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className="h-20 bg-zinc-950 border border-zinc-900 rounded-xl shimmer" />
                         ))
-                    ) : products.length === 0 ? (
+                    ) : products.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()) || p.arabic?.includes(search) || p.category?.name?.toLowerCase().includes(search.toLowerCase()) || p.brand?.name?.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
                         <div className="text-center py-16 text-zinc-500 border border-dashed border-zinc-800 rounded-2xl">{t('noProducts')}</div>
                     ) : (
-                        products.map((prod) => (
+                        products.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()) || p.arabic?.includes(search) || p.category?.name?.toLowerCase().includes(search.toLowerCase()) || p.brand?.name?.toLowerCase().includes(search.toLowerCase())).map((prod) => (
                             <div key={prod.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
                                 <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
                                     {prod.images?.[0]?.image_url
@@ -320,6 +363,19 @@ export const AdminProducts: React.FC = () => {
                                     <FormField label={t('descriptionItem')}>
                                         <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                                             className="admin-input resize-none" />
+                                        {form.description.trim() && (
+                                            <button
+                                                type="button"
+                                                onClick={autoTranslate}
+                                                disabled={translating}
+                                                className="mt-1.5 flex items-center gap-1.5 text-[10px] font-bold text-gold-400 hover:text-gold-300 disabled:opacity-50 cursor-pointer transition-colors"
+                                            >
+                                                {translating ? (
+                                                    <span className="w-3 h-3 border border-gold-400 border-t-transparent rounded-full animate-spin inline-block" />
+                                                ) : '🌐'}
+                                                {translating ? 'Translating…' : 'Auto-translate to AR + HE'}
+                                            </button>
+                                        )}
                                     </FormField>
                                     <div className="grid grid-cols-2 gap-3">
                                         <FormField label={t('categorySelect')} required>
@@ -329,10 +385,10 @@ export const AdminProducts: React.FC = () => {
                                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                             </select>
                                         </FormField>
-                                        <FormField label={t('brandSelect')} required>
-                                            <select required value={form.brand_id} onChange={e => setForm(f => ({ ...f, brand_id: e.target.value }))}
+                                        <FormField label={`${t('brandSelect')} (${t('optional')})`}>
+                                            <select value={form.brand_id} onChange={e => setForm(f => ({ ...f, brand_id: e.target.value }))}
                                                 className="admin-input">
-                                                <option value="">—</option>
+                                                <option value="">— {t('optional')} —</option>
                                                 {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                             </select>
                                         </FormField>

@@ -13,12 +13,133 @@
   --color-gold-900: #4a3b0b;
 }
 
+/* ── Dark mode (default) ── */
 body {
   font-family: 'Outfit', 'Cairo', system-ui, -apple-system, sans-serif;
   background-color: #08080a;
   color: #f3f4f6;
   overflow-x: hidden;
+  transition: background-color 0.3s, color 0.3s;
 }
+
+/* ── Light mode ── */
+body.light {
+  background-color: #f8f5f0;
+  color: #1a1a1a;
+}
+
+body.light .bg-black,
+body.light .bg-\[\#070709\],
+body.light .bg-\[\#08080a\] {
+  background-color: #ffffff !important;
+}
+
+body.light .bg-zinc-950,
+body.light .bg-\[\#0d0d11\],
+body.light .bg-\[\#0e0e12\] {
+  background-color: #f1ece4 !important;
+}
+
+body.light .bg-zinc-900\/60,
+body.light .bg-zinc-900\/40,
+body.light .bg-zinc-900\/35,
+body.light .bg-zinc-900\/30 {
+  background-color: rgba(210, 195, 175, 0.4) !important;
+}
+
+body.light .border-zinc-900,
+body.light .border-zinc-800,
+body.light .border-zinc-850 {
+  border-color: #d4c5ae !important;
+}
+
+body.light .text-zinc-100,
+body.light .text-zinc-200,
+body.light .text-zinc-300 {
+  color: #1a1a1a !important;
+}
+
+body.light .text-zinc-400,
+body.light .text-zinc-500,
+body.light .text-zinc-550 {
+  color: #5a4e3a !important;
+}
+
+body.light .bg-zinc-900,
+body.light .bg-zinc-950 {
+  background-color: #ede5d8 !important;
+}
+
+body.light header {
+  background-color: rgba(248, 245, 240, 0.95) !important;
+  border-bottom-color: #d4c5ae !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #08080a; }
+::-webkit-scrollbar-thumb { background: #272730; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f50; }
+
+body.light ::-webkit-scrollbar-track { background: #f0e9df; }
+body.light ::-webkit-scrollbar-thumb { background: #c5b49a; }
+
+/* Shimmer */
+.shimmer {
+  background: linear-gradient(90deg, #16161a 25%, #22222a 50%, #16161a 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+body.light .shimmer {
+  background: linear-gradient(90deg, #e8dfd3 25%, #f0e9df 50%, #e8dfd3 75%);
+  background-size: 200% 100%;
+}
+@keyframes loading-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.gold-gradient { background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #9e7f1e 100%); }
+.gold-text {
+  background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #b89728 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Marquee animation for announcement bar */
+@keyframes marquee {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 18s linear infinite;
+  white-space: nowrap;
+}
+
+/* Admin form inputs & selects */
+.admin-input {
+  width: 100%;
+  background-color: #0d0d11;
+  border: 1px solid #27272a;
+  color: #e4e4e7;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+.admin-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 1px #d4af3740;
+}
+.admin-input option {
+  background-color: #0d0d11;
+  color: #e4e4e7;
+}
+
 
 /* Custom scrollbar and glassmorphism elements */
 ::-webkit-scrollbar {
