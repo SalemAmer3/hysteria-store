@@ -170,7 +170,7 @@ export const Home: React.FC = () => {
                             <Link
                                 key={brand.id}
                                 to={`/products?brand=${brand.id}`}
-                                className="h-10 md:h-14 flex items-center justify-center opacity-40 hover:opacity-100 transition-all duration-300 filter grayscale hover:grayscale-0 cursor-pointer transform hover:scale-105"
+                                className="h-10 md:h-14 flex items-center justify-center opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer transform hover:scale-105"
                             >
                                 {brand.image_url ? (
                                     <img
