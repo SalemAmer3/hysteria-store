@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { Slider } from '../components/Slider';
 import { ProductCard } from '../components/ProductCard';
-import { Sparkles, ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 export const Home: React.FC = () => {
     const { direction, t, getLocalized } = useLanguage();

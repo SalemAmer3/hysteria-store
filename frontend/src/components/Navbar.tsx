@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Search, ShoppingBag, Heart, Menu, X, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
     const { language, setLanguage, direction, t } = useLanguage();
     const { cart, wishlist } = useCart();
-    const { isAuthenticated, logout } = useAuth();
+    // const { isAuthenticated, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
