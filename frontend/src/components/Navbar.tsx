@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Search, ShoppingBag, Heart, User, Menu, X, LogOut, Sun, Moon } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
     const { language, setLanguage, direction, t } = useLanguage();
@@ -47,33 +47,13 @@ export const Navbar: React.FC = () => {
     return (
         <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'backdrop-blur-md bg-black/90 border-b border-zinc-900 shadow-lg' : 'bg-black/95'
             }`}>
-            {/* Top micro-bar for quick links / Admin status */}
+            {/* Top micro-bar for quick links */}
             <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center text-xs border-b border-zinc-900 border-opacity-50 text-zinc-400">
                 <div>
-                    {isAuthenticated ? (
-                        <span className="text-gold-400 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                            {t('admin')}: {localStorage.getItem('histeria_admin_username')}
-                        </span>
-                    ) : (
-                        <span>{t('stockStatus')}</span>
-                    )}
+                    <span>{t('stockStatus')}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    {isAuthenticated ? (
-                        <>
-                            <Link to="/admin" className="hover:text-white transition-colors">{t('admin')}</Link>
-                            <button onClick={logout} className="hover:text-red-400 flex items-center gap-1 cursor-pointer">
-                                <LogOut size={12} />
-                                <span>{t('logout')}</span>
-                            </button>
-                        </>
-                    ) : (
-                        <Link to="/admin-login" className="hover:text-white transition-colors flex items-center gap-1">
-                            <User size={12} />
-                            <span>{t('adminLogin')}</span>
-                        </Link>
-                    )}
+                    {/* Language Switcher only in top bar */}
                 </div>
             </div>
 

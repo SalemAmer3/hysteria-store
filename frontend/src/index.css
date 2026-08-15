@@ -24,65 +24,214 @@ body {
 
 /* ── Light mode ── */
 body.light {
-  background-color: #f8f5f0;
-  color: #1a1a1a;
+  background-color: #f9f7f5;
+  color: #1c1917;
 }
 
+/* ── Light: Page backgrounds ── */
 body.light .bg-black,
 body.light .bg-\[\#070709\],
 body.light .bg-\[\#08080a\] {
-  background-color: #ffffff !important;
+  background-color: #f9f7f5 !important;
 }
 
 body.light .bg-zinc-950,
 body.light .bg-\[\#0d0d11\],
 body.light .bg-\[\#0e0e12\] {
-  background-color: #f1ece4 !important;
+  background-color: #f2ede8 !important;
+}
+
+body.light .bg-\[\#0d0d11\]\/40,
+body.light .bg-\[\#0d0d11\]\/45,
+body.light .bg-\[\#0d0d11\]\/25,
+body.light .bg-\[\#0e0e12\]\/60 {
+  background-color: rgba(235, 228, 220, 0.5) !important;
 }
 
 body.light .bg-zinc-900\/60,
 body.light .bg-zinc-900\/40,
 body.light .bg-zinc-900\/35,
-body.light .bg-zinc-900\/30 {
-  background-color: rgba(210, 195, 175, 0.4) !important;
+body.light .bg-zinc-900\/30,
+body.light .bg-zinc-900\/10 {
+  background-color: rgba(220, 213, 206, 0.35) !important;
 }
 
+body.light .bg-zinc-950\/40,
+body.light .bg-zinc-950\/60 {
+  background-color: rgba(235, 228, 220, 0.5) !important;
+}
+
+/* ── Light: Card & container backgrounds ── */
+body.light .bg-zinc-900,
+body.light .bg-zinc-950 {
+  background-color: #ede8e3 !important;
+}
+
+body.light .bg-zinc-800 {
+  background-color: #e4ddd7 !important;
+}
+
+/* ── Light: Borders ── */
 body.light .border-zinc-900,
 body.light .border-zinc-800,
 body.light .border-zinc-850 {
-  border-color: #d4c5ae !important;
+  border-color: #d4cbc3 !important;
+}
+
+body.light .border-zinc-900\/60,
+body.light .border-zinc-900\/80 {
+  border-color: rgba(200, 190, 182, 0.55) !important;
+}
+
+/* ── Light: Text colours ── */
+body.light .text-white {
+  color: #1c1917 !important;
 }
 
 body.light .text-zinc-100,
 body.light .text-zinc-200,
 body.light .text-zinc-300 {
-  color: #1a1a1a !important;
+  color: #1c1917 !important;
 }
 
 body.light .text-zinc-400,
 body.light .text-zinc-500,
 body.light .text-zinc-550 {
-  color: #5a4e3a !important;
+  color: #6b6259 !important;
 }
 
-body.light .bg-zinc-900,
-body.light .bg-zinc-950 {
-  background-color: #ede5d8 !important;
+body.light .text-zinc-600 {
+  color: #8a7d74 !important;
 }
 
+/* ── Light: Hard-coded dark text overrides ── */
+body.light .text-\[\#f5ecd2\] {
+  color: #1c1917 !important;
+}
+
+/* ── Light: Header / Navbar ── */
 body.light header {
-  background-color: rgba(248, 245, 240, 0.95) !important;
-  border-bottom-color: #d4c5ae !important;
+  background-color: rgba(249, 247, 245, 0.97) !important;
+  border-bottom-color: #d4cbc3 !important;
 }
 
-/* Custom scrollbar */
+body.light header .bg-black\/90,
+body.light header .bg-black\/95,
+body.light header .bg-black\/60 {
+  background-color: rgba(249, 247, 245, 0.97) !important;
+}
+
+/* ── Light: Footer ── */
+body.light footer {
+  background-color: #ede8e3 !important;
+  border-top-color: #d4cbc3 !important;
+}
+
+body.light footer .bg-\[\#050507\] {
+  background-color: #ede8e3 !important;
+}
+
+/* ── Light: Product cards ── */
+body.light .group.relative.bg-\[\#0d0d11\]\/40 {
+  background-color: #f5f1ee !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Inputs & search bars ── */
+body.light input[type="text"],
+body.light input[type="search"],
+body.light input[type="email"],
+body.light input[type="tel"],
+body.light input[type="number"],
+body.light textarea {
+  background-color: #f5f1ee !important;
+  border-color: #d4cbc3 !important;
+  color: #1c1917 !important;
+}
+
+body.light input::placeholder,
+body.light textarea::placeholder {
+  color: #a89d96 !important;
+}
+
+body.light input:focus,
+body.light textarea:focus {
+  border-color: #b8a99a !important;
+  box-shadow: 0 0 0 2px rgba(184, 169, 154, 0.25) !important;
+}
+
+/* ── Light: Dropdowns & language switcher ── */
+body.light .bg-zinc-950.border.border-zinc-900 {
+  background-color: #f5f1ee !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Mobile drawer ── */
+body.light .bg-zinc-950.border-r {
+  background-color: #f9f7f5 !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Quantity selectors & buttons ── */
+body.light .bg-zinc-950.font-sans,
+body.light .border.border-zinc-850.rounded-xl.bg-zinc-950 {
+  background-color: #f5f1ee !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Section borders ── */
+body.light .border-t.border-zinc-900,
+body.light .border-b.border-zinc-900 {
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Gradient sections ── */
+body.light .bg-gradient-to-br.from-zinc-950 {
+  background: linear-gradient(135deg, #f2ede8 0%, #ede8e3 50%, #f2ede8 100%) !important;
+}
+
+/* ── Light: Announcement bar overlay ── */
+body.light .bg-gradient-to-r.from-black {
+  background: linear-gradient(to right, rgba(237,232,227,0.95), rgba(237,232,227,0.7), transparent) !important;
+}
+
+/* ── Light: Image container areas ── */
+body.light .bg-zinc-950.border.border-zinc-900.relative,
+body.light .aspect-square.w-full.rounded-3xl.overflow-hidden.bg-zinc-950 {
+  background-color: #f2ede8 !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* ── Light: Social icons in footer ── */
+body.light .w-10.h-10.rounded-full.bg-zinc-900 {
+  background-color: #e4ddd7 !important;
+}
+
+/* ── Light: Checkboxes ── */
+body.light input[type="checkbox"] {
+  background-color: #f5f1ee !important;
+  border-color: #d4cbc3 !important;
+  accent-color: #b8a99a !important;
+}
+
+/* ── Light: gold accent keeps warm tone ── */
+body.light .text-gold-400 {
+  color: #a0845c !important;
+}
+
+body.light .border-gold-400 {
+  border-color: #b8a99a !important;
+}
+
+/* ── Light: Custom scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #08080a; }
 ::-webkit-scrollbar-thumb { background: #272730; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #3f3f50; }
 
-body.light ::-webkit-scrollbar-track { background: #f0e9df; }
-body.light ::-webkit-scrollbar-thumb { background: #c5b49a; }
+body.light ::-webkit-scrollbar-track { background: #f2ede8; }
+body.light ::-webkit-scrollbar-thumb { background: #c8bdb6; border-radius: 3px; }
+body.light ::-webkit-scrollbar-thumb:hover { background: #b8a99a; }
 
 /* Shimmer */
 .shimmer {
@@ -135,78 +284,6 @@ body.light .shimmer {
   border-color: #d4af37;
   box-shadow: 0 0 0 1px #d4af3740;
 }
-.admin-input option {
-  background-color: #0d0d11;
-  color: #e4e4e7;
-}
-
-
-/* Custom scrollbar and glassmorphism elements */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #08080a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #272730;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f50;
-}
-
-/* Custom styles for animations and high-end Sephora-style components */
-.shimmer {
-  background: linear-gradient(90deg, #16161a 25%, #22222a 50%, #16161a 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.gold-gradient {
-  background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #9e7f1e 100%);
-}
-
-.gold-text {
-  background: linear-gradient(135deg, #f4ecdf 0%, #d4af37 50%, #b89728 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Admin form inputs & selects */
-.admin-input {
-  width: 100%;
-  background-color: #0d0d11;
-  border: 1px solid #27272a;
-  color: #e4e4e7;
-  border-radius: 0.625rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8125rem;
-  outline: none;
-  transition: border-color 0.15s;
-  appearance: auto;
-  -webkit-appearance: auto;
-}
-
-.admin-input:focus {
-  border-color: #d4af37;
-  box-shadow: 0 0 0 1px #d4af3740;
-}
-
 .admin-input option {
   background-color: #0d0d11;
   color: #e4e4e7;

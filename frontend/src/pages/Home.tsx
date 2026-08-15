@@ -99,20 +99,9 @@ export const Home: React.FC = () => {
                             <Link
                                 key={cat.id}
                                 to={`/products?category=${cat.id}`}
-                                className="flex flex-col items-center gap-3 text-center group flex-shrink-0 cursor-pointer"
+                                className="flex items-center justify-center px-5 py-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 hover:border-gold-400/50 hover:bg-zinc-900 transition-all duration-300 cursor-pointer hover:scale-[1.03] flex-shrink-0 group"
                             >
-                                <div className="w-18 h-18 md:w-24 md:h-24 rounded-full border border-zinc-900 group-hover:border-gold-400/60 bg-zinc-950 flex items-center justify-center overflow-hidden transition-all duration-300 transform group-hover:scale-105 shadow-2xl relative">
-                                    {cat.image_url ? (
-                                        <img
-                                            src={cat.image_url}
-                                            alt={getLocalized(cat, 'name')}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <Sparkles size={24} className="text-zinc-700" />
-                                    )}
-                                </div>
-                                <span className="text-xs md:text-sm text-zinc-400 group-hover:text-gold-400 transition-colors font-medium">
+                                <span className="text-sm font-bold text-zinc-300 group-hover:text-gold-400 transition-colors tracking-wide whitespace-nowrap">
                                     {getLocalized(cat, 'name')}
                                 </span>
                             </Link>
@@ -170,22 +159,28 @@ export const Home: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-24 bg-zinc-900 shimmer rounded-2xl" />
+                    <div className="flex justify-center gap-12 py-4 overflow-x-auto">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="w-24 h-12 bg-zinc-900 shimmer rounded-lg" />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
                         {brands.map((brand) => (
                             <Link
                                 key={brand.id}
                                 to={`/products?brand=${brand.id}`}
-                                className="group flex items-center justify-center p-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 hover:border-gold-400/50 hover:bg-zinc-900 transition-all duration-300 cursor-pointer hover:scale-[1.03] hover:shadow-lg hover:shadow-gold-400/5"
+                                className="h-10 md:h-14 flex items-center justify-center opacity-40 hover:opacity-100 transition-all duration-300 filter grayscale hover:grayscale-0 cursor-pointer transform hover:scale-105"
                             >
-                                <span className="text-sm md:text-base font-extrabold font-sans tracking-widest text-zinc-300 group-hover:text-gold-400 transition-colors uppercase text-center">
-                                    {brand.name}
-                                </span>
+                                {brand.image_url ? (
+                                    <img
+                                        src={brand.image_url}
+                                        alt={brand.name}
+                                        className="max-h-full max-w-[120px] md:max-w-[180px] object-contain"
+                                    />
+                                ) : (
+                                    <span className="text-lg md:text-2xl font-extrabold font-sans tracking-widest text-[#f5ecd2]">{brand.name}</span>
+                                )}
                             </Link>
                         ))}
                     </div>

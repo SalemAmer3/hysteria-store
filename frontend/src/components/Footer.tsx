@@ -132,11 +132,8 @@ export const Footer: React.FC = () => {
                 </div>
 
                 {/* Lower bar */}
-                <div className="border-t border-zinc-900 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-zinc-600 text-xs">
+                <div className="border-t border-zinc-900 mt-16 pt-8 flex justify-center items-center text-zinc-600 text-xs">
                     <p>{t('allRightsReserved')}</p>
-                    <div className="flex gap-4 font-semibold">
-                        <Link to="/admin-login" className="hover:text-zinc-400 transition-colors">{t('admin')}</Link>
-                    </div>
                 </div>
             </div>
         </footer>
