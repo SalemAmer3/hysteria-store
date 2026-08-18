@@ -29,15 +29,17 @@ model Category {
 }
 
 model Product {
-  id          String          @id @default(uuid()) @db.Uuid
-  name        String
-  description String?
-  category_id String          @db.Uuid
-  brand_id    String?         @db.Uuid
-  arabic      String?
-  hebrew      String?
-  created_at  DateTime        @default(now())
-  updated_at  DateTime        @updatedAt
+  id                   String          @id @default(uuid()) @db.Uuid
+  name                 String
+  description          String?
+  category_id          String          @db.Uuid
+  brand_id             String?         @db.Uuid
+  arabic               String?
+  hebrew               String?
+  arabic_description   String?
+  hebrew_description   String?
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
 
   category    Category        @relation(fields: [category_id], references: [id], onDelete: Restrict)
   brand       Brand?          @relation(fields: [brand_id], references: [id], onDelete: SetNull)

@@ -25,6 +25,8 @@ interface ProductImage {
 interface ProductFormState {
     name: string;
     description: string;
+    arabic_description: string;
+    hebrew_description: string;
     category_id: string;
     brand_id: string;
     arabic: string;
@@ -34,7 +36,8 @@ interface ProductFormState {
 }
 
 const emptyForm: ProductFormState = {
-    name: '', description: '', category_id: '', brand_id: '',
+    name: '', description: '', arabic_description: '', hebrew_description: '',
+    category_id: '', brand_id: '',
     arabic: '', hebrew: '', options: [], images: [],
 };
 
@@ -60,21 +63,22 @@ export const AdminProducts: React.FC = () => {
     const [search, setSearch] = useState('');
 
     // Auto-translate description using MyMemory free API
+    // Source: Arabic (arabic_description) → translates to EN (description) + HE (hebrew_description)
     const autoTranslate = async () => {
-        if (!form.description.trim()) return;
+        if (!form.arabic_description.trim()) return;
         setTranslating(true);
         try {
-            const [arRes, heRes] = await Promise.all([
-                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.description)}&langpair=en|ar`),
-                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.description)}&langpair=en|he`),
+            const [enRes, heRes] = await Promise.all([
+                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.arabic_description)}&langpair=ar|en`),
+                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.arabic_description)}&langpair=ar|he`),
             ]);
-            const [arData, heData] = await Promise.all([arRes.json(), heRes.json()]);
-            const arText = arData?.responseData?.translatedText || '';
+            const [enData, heData] = await Promise.all([enRes.json(), heRes.json()]);
+            const enText = enData?.responseData?.translatedText || '';
             const heText = heData?.responseData?.translatedText || '';
             setForm(f => ({
                 ...f,
-                arabic: arText || f.arabic,
-                hebrew: heText || f.hebrew,
+                description: enText || f.description,
+                hebrew_description: heText || f.hebrew_description,
             }));
         } catch {
             // silently fail — user can fill manually
@@ -119,6 +123,8 @@ export const AdminProducts: React.FC = () => {
             setForm({
                 name: p.name || '',
                 description: p.description || '',
+                arabic_description: p.arabic_description || '',
+                hebrew_description: p.hebrew_description || '',
                 category_id: p.category_id || '',
                 brand_id: p.brand_id || '',
                 arabic: p.arabic || '',
@@ -171,6 +177,8 @@ export const AdminProducts: React.FC = () => {
                     name: form.name, description: form.description || null,
                     category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
+                    arabic_description: form.arabic_description || null,
+                    hebrew_description: form.hebrew_description || null,
                 });
                 productId = editProduct.id;
 
@@ -218,6 +226,8 @@ export const AdminProducts: React.FC = () => {
                     name: form.name, description: form.description || null,
                     category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
+                    arabic_description: form.arabic_description || null,
+                    hebrew_description: form.hebrew_description || null,
                 });
                 productId = res.data.id;
 
@@ -361,21 +371,39 @@ export const AdminProducts: React.FC = () => {
                                             className="admin-input" dir="rtl" placeholder="שם בעברית" />
                                     </FormField>
                                     <FormField label={t('descriptionItem')}>
-                                        <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                                            className="admin-input resize-none" />
-                                        {form.description.trim() && (
-                                            <button
-                                                type="button"
-                                                onClick={autoTranslate}
-                                                disabled={translating}
-                                                className="mt-1.5 flex items-center gap-1.5 text-[10px] font-bold text-gold-400 hover:text-gold-300 disabled:opacity-50 cursor-pointer transition-colors"
-                                            >
-                                                {translating ? (
-                                                    <span className="w-3 h-3 border border-gold-400 border-t-transparent rounded-full animate-spin inline-block" />
-                                                ) : '🌐'}
-                                                {translating ? 'Translating…' : 'Auto-translate to AR + HE'}
-                                            </button>
-                                        )}
+                                        <div className="space-y-2">
+                                            {/* Arabic description - primary input */}
+                                            <div>
+                                                <label className="block text-[10px] text-zinc-600 mb-1" dir="rtl">الوصف بالعربية (المصدر)</label>
+                                                <textarea rows={3} value={form.arabic_description} onChange={e => setForm(f => ({ ...f, arabic_description: e.target.value }))}
+                                                    className="admin-input resize-none" dir="rtl" placeholder="اكتب الوصف بالعربية هنا..." />
+                                                {form.arabic_description.trim() && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={autoTranslate}
+                                                        disabled={translating}
+                                                        className="mt-1.5 flex items-center gap-1.5 text-[10px] font-bold text-gold-400 hover:text-gold-300 disabled:opacity-50 cursor-pointer transition-colors"
+                                                    >
+                                                        {translating ? (
+                                                            <span className="w-3 h-3 border border-gold-400 border-t-transparent rounded-full animate-spin inline-block" />
+                                                        ) : '🌐'}
+                                                        {translating ? 'جاري الترجمة…' : 'ترجم تلقائياً للإنجليزي والعبري'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                            {/* English description */}
+                                            <div>
+                                                <label className="block text-[10px] text-zinc-600 mb-1">Description (English)</label>
+                                                <textarea rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                                                    className="admin-input resize-none" placeholder="English description (auto-filled or manual)" />
+                                            </div>
+                                            {/* Hebrew description */}
+                                            <div>
+                                                <label className="block text-[10px] text-zinc-600 mb-1" dir="rtl">תיאור בעברית</label>
+                                                <textarea rows={2} value={form.hebrew_description} onChange={e => setForm(f => ({ ...f, hebrew_description: e.target.value }))}
+                                                    className="admin-input resize-none" dir="rtl" placeholder="תיאור בעברית (אוטומטי או ידני)" />
+                                            </div>
+                                        </div>
                                     </FormField>
                                     <div className="grid grid-cols-2 gap-3">
                                         <FormField label={t('categorySelect')} required>

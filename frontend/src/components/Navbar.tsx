@@ -238,6 +238,31 @@ export const Navbar: React.FC = () => {
                         <Link to="/products?category=all" className="w-full py-2 hover:text-gold-400 border-b border-zinc-900 transition-colors">{t('categories')}</Link>
                         <Link to="/products?brand=all" className="w-full py-2 hover:text-gold-400 border-b border-zinc-900 transition-colors">{t('brands')}</Link>
                     </div>
+
+                    {/* Language Switcher - Mobile */}
+                    <div className="border-t border-zinc-900 pt-4">
+                        <p className="text-[10px] uppercase font-extrabold tracking-widest text-zinc-600 mb-3">{t('switchLanguage')}</p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => { handleLangChange('ar'); setMobileMenuOpen(false); }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${language === 'ar' ? 'bg-gold-400 text-black border-gold-400' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'}`}
+                            >
+                                <span>🇸🇦</span> <span>العربية</span>
+                            </button>
+                            <button
+                                onClick={() => { handleLangChange('he'); setMobileMenuOpen(false); }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${language === 'he' ? 'bg-gold-400 text-black border-gold-400' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'}`}
+                            >
+                                <span>🇮🇱</span> <span>עברית</span>
+                            </button>
+                            <button
+                                onClick={() => { handleLangChange('en'); setMobileMenuOpen(false); }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${language === 'en' ? 'bg-gold-400 text-black border-gold-400' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'}`}
+                            >
+                                <span>🇬🇧</span> <span>EN</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Footer info in drawer */}
