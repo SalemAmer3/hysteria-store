@@ -35,9 +35,6 @@ async function request(url: string, options: RequestOptions = {}) {
 
     if (response.status === 401) {
         const hadToken = !!localStorage.getItem('histeria_admin_token');
-        // Only redirect to "expired" page if the user was already logged in
-        // (i.e. had a token). A 401 on the login endpoint itself means wrong
-        // credentials, not an expired session.
         if (hadToken) {
             localStorage.removeItem('histeria_admin_token');
             localStorage.removeItem('histeria_admin_username');
@@ -47,7 +44,16 @@ async function request(url: string, options: RequestOptions = {}) {
         }
     }
 
-    const result = await response.json();
+    // Safe JSON parse — avoid "Unexpected token" if server returns HTML error page
+    const contentType = response.headers.get('content-type') || '';
+    let result: any;
+    if (contentType.includes('application/json')) {
+        result = await response.json();
+    } else {
+        const text = await response.text();
+        result = { success: false, message: text || `HTTP ${response.status}` };
+    }
+
     if (!response.ok) {
         throw new Error(result.message || 'API request failed');
     }
@@ -148,5 +154,13 @@ export const api = {
                 isMultipart: true,
             });
         },
+    },
+
+    ticker: {
+        listPublic: () => request('/ticker'),
+        listAdmin: (page = 1, limit = 100) => request(`/admin/ticker?page=${page}&limit=${limit}`),
+        create: (body: any) => request('/admin/ticker', { method: 'POST', body }),
+        update: (id: string, body: any) => request(`/admin/ticker/${id}`, { method: 'PUT', body }),
+        delete: (id: string) => request(`/admin/ticker/${id}`, { method: 'DELETE' }),
     },
 };

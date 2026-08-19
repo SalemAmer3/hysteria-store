@@ -16,6 +16,7 @@ import sliderRoutes from './modules/sliders/slider.routes';
 import couponRoutes from './modules/coupons/coupon.routes';
 import adRoutes from './modules/ads/ad.routes';
 import uploadRoutes from './modules/uploads/upload.routes';
+import tickerRoutes from './modules/ticker/ticker.routes';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use(API_BASE, sliderRoutes);
 app.use(API_BASE, couponRoutes);
 app.use(API_BASE, adRoutes);
 app.use(API_BASE, uploadRoutes);
+app.use(API_BASE, tickerRoutes);
 
 // 404 handler
 app.use((_req, res) => {

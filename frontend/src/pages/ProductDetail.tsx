@@ -216,7 +216,7 @@ export const ProductDetail: React.FC = () => {
                         <img
                             src={activeImage}
                             alt={name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                         />
                         {wishlistActive && (
                             <span className="absolute top-4 right-4 bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 text-[10px] font-bold tracking-wider uppercase rounded-full backdrop-blur-md">

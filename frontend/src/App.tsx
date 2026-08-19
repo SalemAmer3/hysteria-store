@@ -27,6 +27,7 @@ import { AdminBrands } from './pages/admin/AdminBrands';
 import { AdminSliders } from './pages/admin/AdminSliders';
 import { AdminAds } from './pages/admin/AdminAds';
 import { AdminCoupons } from './pages/admin/AdminCoupons';
+import { AdminTicker } from './pages/admin/AdminTicker';
 
 // Store layout wrapper
 const StoreLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -67,6 +68,7 @@ function App() {
               <Route path="/admin/sliders" element={<AdminSliders />} />
               <Route path="/admin/ads" element={<AdminAds />} />
               <Route path="/admin/coupons" element={<AdminCoupons />} />
+              <Route path="/admin/ticker" element={<AdminTicker />} />
 
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -10,6 +10,7 @@ export interface CartItem {
         hebrew?: string | null;
         images?: Array<{ image_url: string }>;
         brand_name?: string | null;
+        sku?: string | null;
     };
     option: {
         id: string;
@@ -141,6 +142,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         hebrew: product.hebrew,
                         images: product.images,
                         brand_name: product.brand?.name || null,
+                        sku: product.sku || null,
                     },
                     option: {
                         id: option.id,
@@ -318,6 +320,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ].filter(Boolean).join(' | ');
 
             message += `${index + 1}. *${prodName}*\n`;
+            if (item.product.sku) {
+                message += `   🔖 SKU: \`${item.product.sku}\`\n`;
+            }
             if (item.product.brand_name) {
                 message += `   🏷️ ${item.product.brand_name}\n`;
             }

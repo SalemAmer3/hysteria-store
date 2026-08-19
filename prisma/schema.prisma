@@ -31,6 +31,7 @@ model Category {
 model Product {
   id                   String          @id @default(uuid()) @db.Uuid
   name                 String
+  sku                  String?
   description          String?
   category_id          String          @db.Uuid
   brand_id             String?         @db.Uuid
@@ -128,6 +129,17 @@ model AdminUser {
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+}
+
+model Ticker {
+  id         String   @id @default(uuid()) @db.Uuid
+  text       String
+  arabic     String?
+  hebrew     String?
+  is_active  Boolean  @default(true)
+  order      Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Ad {

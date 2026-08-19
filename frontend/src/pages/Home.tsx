@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { Slider } from '../components/Slider';
 import { ProductCard } from '../components/ProductCard';
-import { ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ArrowUpRight, ChevronDown } from 'lucide-react';
 
 export const Home: React.FC = () => {
     const { direction, t, getLocalized } = useLanguage();
@@ -13,6 +13,7 @@ export const Home: React.FC = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [ads, setAds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         async function loadHomeData() {
@@ -75,7 +76,7 @@ export const Home: React.FC = () => {
                 </section>
             )}
 
-            {/* 3. Circular Category Navigation Showcase */}
+            {/* 3. Category Navigation - Accordion style */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="text-center space-y-2 mb-8">
                     <h2 className="text-xl md:text-3xl font-extrabold tracking-wide uppercase text-zinc-100 font-sans">
@@ -85,27 +86,64 @@ export const Home: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center gap-6 overflow-x-auto py-4">
-                        {[1, 2, 3, 4, 5].map((idx) => (
-                            <div key={idx} className="w-24 md:w-32 flex flex-col items-center gap-3">
-                                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full shimmer" />
-                                <div className="w-12 h-3 bg-zinc-900 rounded shimmer" />
-                            </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+                        {[1, 2, 3, 4].map((idx) => (
+                            <div key={idx} className="h-14 bg-zinc-900 rounded-xl shimmer" />
                         ))}
                     </div>
                 ) : (
-                    <div className="flex items-start justify-center gap-6 md:gap-10 overflow-x-auto pb-4 scrollbar-thin">
-                        {categories.filter(c => !c.parent_id).map((cat) => (
-                            <Link
-                                key={cat.id}
-                                to={`/products?category=${cat.id}`}
-                                className="flex items-center justify-center px-5 py-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 hover:border-gold-400/50 hover:bg-zinc-900 transition-all duration-300 cursor-pointer hover:scale-[1.03] flex-shrink-0 group"
-                            >
-                                <span className="text-sm font-bold text-zinc-300 group-hover:text-gold-400 transition-colors tracking-wide whitespace-nowrap">
-                                    {getLocalized(cat, 'name')}
-                                </span>
-                            </Link>
-                        ))}
+                    <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {categories.filter(c => !c.parent_id).map((cat) => {
+                            const children = categories.filter(c => c.parent_id === cat.id);
+                            const hasChildren = children.length > 0;
+                            const isExpanded = !!expandedCats[cat.id];
+
+                            return (
+                                <div key={cat.id} className="flex flex-col">
+                                    {/* Parent row */}
+                                    <div className={`flex items-center justify-between rounded-xl border transition-all duration-200 overflow-hidden ${isExpanded ? 'border-gold-400/40 bg-zinc-900' : 'border-zinc-800 bg-zinc-950/60 hover:border-zinc-700'}`}>
+                                        <Link
+                                            to={`/products?category=${cat.id}`}
+                                            className="flex items-center gap-3 flex-1 px-4 py-3.5 group"
+                                        >
+                                            {cat.image_url && (
+                                                <img src={cat.image_url} alt="" className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
+                                            )}
+                                            <span className={`text-sm font-bold transition-colors ${isExpanded ? 'text-gold-400' : 'text-zinc-300 group-hover:text-gold-400'}`}>
+                                                {getLocalized(cat, 'name')}
+                                            </span>
+                                        </Link>
+                                        {hasChildren && (
+                                            <button
+                                                onClick={() => setExpandedCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
+                                                className="px-3 py-3.5 text-zinc-500 hover:text-gold-400 transition-colors cursor-pointer flex-shrink-0"
+                                            >
+                                                <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-gold-400' : ''}`} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Children - slide down */}
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-80 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                                        <div className={`flex flex-col gap-0.5 ${direction === 'rtl' ? 'mr-3 pr-3 border-r-2 border-gold-400/20' : 'ml-3 pl-3 border-l-2 border-gold-400/20'}`}>
+                                            {children.map((child) => (
+                                                <Link
+                                                    key={child.id}
+                                                    to={`/products?category=${child.id}`}
+                                                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-all group"
+                                                >
+                                                    {child.image_url && (
+                                                        <img src={child.image_url} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-70 group-hover:opacity-100" />
+                                                    )}
+                                                    <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
+                                                    <span>{getLocalized(child, 'name')}</span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </section>
@@ -187,40 +225,7 @@ export const Home: React.FC = () => {
                 )}
             </section>
 
-            {/* 6. Premium Highlight Section (Sephora/Dior feel) */}
-            <section className="max-w-5xl mx-auto px-4 md:px-8 select-none">
-                <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-zinc-950 via-[#0d0d12] to-zinc-950 border border-zinc-900 p-8 md:p-16 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
-                    <div className="absolute w-[200px] h-[200px] rounded-full bg-gold-400/5 filter blur-3xl right-6 top-6 pointer-events-none" />
-                    <div className="space-y-4 max-w-md">
-                        <span className="text-[10px] uppercase font-extrabold tracking-widest text-gold-400">Since 2026</span>
-                        <h2 className="text-2xl md:text-4xl font-extrabold text-[#f5ecd2] leading-tight font-sans">
-                            HISTERIA SIGNATURE LUXURY OUD
-                        </h2>
-                        <p className="text-zinc-400 text-xs md:text-sm leading-relaxed">
-                            {direction === 'rtl'
-                                ? 'مزيج فاخر من دهن العود المعتق وزهور الياسمين البرية مع نوتات العنبر الدافئ لتمنحك رائحة لا تنسى تدوم طوال اليوم.'
-                                : 'Formulated with age-old aged Oud oil, blooming wild jasmine petals, and dry notes of amber wood, our signature perfume offers an unforgettable presence.'
-                            }
-                        </p>
-                        <div className="pt-2">
-                            <Link
-                                to="/products?category=all"
-                                className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition-transform duration-300 hover:scale-105 inline-block cursor-pointer uppercase tracking-wider"
-                            >
-                                {direction === 'rtl' ? 'تصفح المجموعة' : 'Explore Collections'}
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="w-full md:w-1/2 aspect-square rounded-2xl overflow-hidden bg-zinc-900/60 border border-zinc-800">
-                        <img
-                            src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=630&q=80"
-                            alt="Luxury Oud Perfume"
-                            className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                    </div>
-                </div>
-            </section>
-
         </div>
     );
 };
+

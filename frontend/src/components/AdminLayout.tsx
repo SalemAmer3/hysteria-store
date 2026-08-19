@@ -13,7 +13,8 @@ import {
     ArrowLeft,
     LogOut,
     Menu,
-    X
+    X,
+    ScrollText,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -49,6 +50,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { name: t('brandsManage'), path: '/admin/brands', icon: Sparkles },
         { name: t('slidersManage'), path: '/admin/sliders', icon: SlidersIcon },
         { name: t('adsManage'), path: '/admin/ads', icon: Megaphone },
+        { name: direction === 'rtl' ? 'الشريط المتحرك' : 'Ticker', path: '/admin/ticker', icon: ScrollText },
         { name: t('couponsManage'), path: '/admin/coupons', icon: Ticket },
     ];
 

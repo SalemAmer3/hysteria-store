@@ -17,6 +17,7 @@ export const Navbar: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -40,6 +41,7 @@ export const Navbar: React.FC = () => {
 
     const handleLangChange = (lang: 'ar' | 'en' | 'he') => {
         setLanguage(lang);
+        setLangDropdownOpen(false);
     };
 
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -101,42 +103,50 @@ export const Navbar: React.FC = () => {
 
                     {/* Menu / Language & Icons */}
                     <div className="flex items-center gap-2 md:gap-5">
-                        {/* Language Switcher */}
-                        <div className="relative group text-sm">
-                            <button className="flex items-center gap-1.5 text-zinc-300 hover:text-gold-400 py-2 cursor-pointer font-medium tracking-wide">
+                        {/* Language Switcher - click-based (works on mobile & desktop) */}
+                        <div className="relative text-sm">
+                            <button
+                                onClick={() => setLangDropdownOpen(prev => !prev)}
+                                className="flex items-center gap-1.5 text-zinc-300 hover:text-gold-400 py-2 cursor-pointer font-medium tracking-wide"
+                            >
                                 <span>
                                     {language === 'ar' ? '🇸🇦' : language === 'he' ? '🇮🇱' : '🇬🇧'}
                                 </span>
                                 <span className="hidden sm:inline">{t('languageName')}</span>
                             </button>
 
-                            <div className={`absolute top-full bg-zinc-950 border border-zinc-900 rounded-lg shadow-2xl py-1.5 min-w-[120px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 mt-1 ${direction === 'rtl' ? 'left-0' : 'right-0'
-                                }`}>
-                                <button
-                                    onClick={() => handleLangChange('ar')}
-                                    className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'ar' ? 'text-gold-400 font-semibold' : ''
-                                        }`}
-                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                >
-                                    <span>🇸🇦</span> <span className="font-arabic font-normal">العربية</span>
-                                </button>
-                                <button
-                                    onClick={() => handleLangChange('he')}
-                                    className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'he' ? 'text-gold-400 font-semibold' : ''
-                                        }`}
-                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                >
-                                    <span>🇮🇱</span> <span className="font-arabic font-normal">עברית</span>
-                                </button>
-                                <button
-                                    onClick={() => handleLangChange('en')}
-                                    className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'en' ? 'text-gold-400 font-semibold' : ''
-                                        }`}
-                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                >
-                                    <span>🇬🇧</span> English
-                                </button>
-                            </div>
+                            {langDropdownOpen && (
+                                <>
+                                    {/* backdrop to close on outside click */}
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setLangDropdownOpen(false)}
+                                    />
+                                    <div className={`absolute top-full z-50 bg-zinc-950 border border-zinc-900 rounded-lg shadow-2xl py-1.5 min-w-[130px] mt-1 ${direction === 'rtl' ? 'left-0' : 'right-0'}`}>
+                                        <button
+                                            onClick={() => handleLangChange('ar')}
+                                            className={`w-full text-left px-4 py-2.5 text-xs flex items-center gap-2 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'ar' ? 'text-gold-400 font-bold' : 'text-zinc-300'}`}
+                                            style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                        >
+                                            <span>🇸🇦</span> <span>العربية</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleLangChange('he')}
+                                            className={`w-full text-left px-4 py-2.5 text-xs flex items-center gap-2 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'he' ? 'text-gold-400 font-bold' : 'text-zinc-300'}`}
+                                            style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                        >
+                                            <span>🇮🇱</span> <span>עברית</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleLangChange('en')}
+                                            className={`w-full text-left px-4 py-2.5 text-xs flex items-center gap-2 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'en' ? 'text-gold-400 font-bold' : 'text-zinc-300'}`}
+                                            style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                        >
+                                            <span>🇬🇧</span> <span>English</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Theme Toggle */}

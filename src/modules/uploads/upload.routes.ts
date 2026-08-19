@@ -9,7 +9,15 @@ const router = Router();
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5 MB limit
+        fileSize: 8 * 1024 * 1024, // 8 MB limit
+    },
+    fileFilter: (_req, file, cb) => {
+        // Accept all image types
+        if (file.mimetype.startsWith('image/') || file.mimetype === 'application/octet-stream') {
+            cb(null, true);
+        } else {
+            cb(null, false);
+        }
     },
 });
 

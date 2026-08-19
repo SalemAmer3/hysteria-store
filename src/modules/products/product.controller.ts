@@ -7,6 +7,7 @@ import { getPaginationQuery, buildPaginatedResponse } from '../../lib/pagination
 
 const productSchema = z.object({
     name: z.string().min(1, 'Product name is required'),
+    sku: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     category_id: z.string().uuid('Invalid category_id format'),
     brand_id: z.string().uuid('Invalid brand_id format').nullable().optional(),
@@ -101,6 +102,7 @@ export class ProductController {
             const product = await prisma.product.create({
                 data: {
                     name: body.name,
+                    sku: body.sku ?? null,
                     description: body.description ?? null,
                     category_id: body.category_id,
                     brand_id: body.brand_id ?? null,
@@ -134,6 +136,7 @@ export class ProductController {
                 where: { id },
                 data: {
                     name: body.name ?? product.name,
+                    sku: body.sku !== undefined ? body.sku : (product as any).sku,
                     description: body.description !== undefined ? body.description : product.description,
                     category_id: body.category_id ?? product.category_id,
                     brand_id: body.brand_id ?? product.brand_id,

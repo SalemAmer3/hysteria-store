@@ -12,15 +12,19 @@ export class UploadController {
             }
 
             // Validate MIME type
-            const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-            if (!allowedMimes.includes(file.mimetype)) {
-                throw new CustomError(400, 'Invalid file type. Supported types: JPEG, PNG, WEBP');
+            const allowedMimes = [
+                'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+                'image/gif', 'image/bmp', 'image/tiff', 'image/avif',
+                'image/svg+xml', 'application/octet-stream',
+            ];
+            if (!allowedMimes.includes(file.mimetype) && !file.mimetype.startsWith('image/')) {
+                throw new CustomError(400, 'Invalid file type. Supported types: JPEG, PNG, WEBP, GIF');
             }
 
             // Double check file size (just to be safe, though multer limits it)
-            const maxSize = 5 * 1024 * 1024; // 5 MB
+            const maxSize = 8 * 1024 * 1024; // 8 MB
             if (file.size > maxSize) {
-                throw new CustomError(400, 'File size exceeds limit of 5 MB');
+                throw new CustomError(400, 'File size exceeds limit of 8 MB');
             }
 
             // Upload to Cloudflare R2

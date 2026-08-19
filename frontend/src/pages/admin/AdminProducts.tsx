@@ -24,6 +24,7 @@ interface ProductImage {
 
 interface ProductFormState {
     name: string;
+    sku: string;
     description: string;
     arabic_description: string;
     hebrew_description: string;
@@ -36,7 +37,7 @@ interface ProductFormState {
 }
 
 const emptyForm: ProductFormState = {
-    name: '', description: '', arabic_description: '', hebrew_description: '',
+    name: '', sku: '', description: '', arabic_description: '', hebrew_description: '',
     category_id: '', brand_id: '',
     arabic: '', hebrew: '', options: [], images: [],
 };
@@ -122,6 +123,7 @@ export const AdminProducts: React.FC = () => {
             setEditProduct(p);
             setForm({
                 name: p.name || '',
+                sku: p.sku || '',
                 description: p.description || '',
                 arabic_description: p.arabic_description || '',
                 hebrew_description: p.hebrew_description || '',
@@ -175,6 +177,7 @@ export const AdminProducts: React.FC = () => {
             if (editProduct) {
                 await api.products.update(editProduct.id, {
                     name: form.name, description: form.description || null,
+                    sku: form.sku || null,
                     category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
                     arabic_description: form.arabic_description || null,
@@ -224,6 +227,7 @@ export const AdminProducts: React.FC = () => {
             } else {
                 const res = await api.products.create({
                     name: form.name, description: form.description || null,
+                    sku: form.sku || null,
                     category_id: form.category_id, brand_id: form.brand_id || null,
                     arabic: form.arabic || null, hebrew: form.hebrew || null,
                     arabic_description: form.arabic_description || null,
@@ -306,6 +310,9 @@ export const AdminProducts: React.FC = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-zinc-200 font-semibold text-sm truncate">{prod.name}</p>
+                                    {prod.sku && (
+                                        <p className="text-[10px] text-zinc-600 font-mono mt-0.5">SKU: {prod.sku}</p>
+                                    )}
                                     <div className="flex flex-wrap gap-2 mt-1">
                                         <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">
                                             {prod.category?.name || '—'}
@@ -361,6 +368,15 @@ export const AdminProducts: React.FC = () => {
                                     <FormField label={t('prodNameEn')} required>
                                         <input type="text" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                                             className="admin-input" />
+                                    </FormField>
+                                    <FormField label="SKU (اختياري)">
+                                        <input
+                                            type="text"
+                                            value={form.sku}
+                                            onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
+                                            className="admin-input font-mono tracking-widest"
+                                            placeholder="e.g. HST-001 / PERF-RED-50ML"
+                                        />
                                     </FormField>
                                     <FormField label={t('prodNameAr')}>
                                         <input type="text" value={form.arabic} onChange={e => setForm(f => ({ ...f, arabic: e.target.value }))}

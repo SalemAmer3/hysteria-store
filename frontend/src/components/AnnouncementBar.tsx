@@ -3,33 +3,30 @@ import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
 export const AnnouncementBar: React.FC = () => {
-    const { getLocalized, t } = useLanguage();
+    const { language, t } = useLanguage();
     const [messages, setMessages] = useState<string[]>([]);
 
     useEffect(() => {
-        async function loadPromos() {
+        async function loadTicker() {
             try {
-                const adsRes = await api.ads.listPublic();
-                const activeAds = adsRes.data.filter((ad: any) => ad.is_active);
-                let promoTexts: string[] = [];
-                if (activeAds.length > 0) {
-                    activeAds.forEach((ad: any) => {
-                        const txt = getLocalized(ad, 'description');
-                        if (txt) promoTexts.push(txt);
-                    });
-                }
-                if (promoTexts.length === 0) promoTexts.push(t('announceText'));
-                setMessages(promoTexts);
+                const res = await api.ticker.listPublic();
+                const items: any[] = res.data || [];
+                const texts = items.map((item) => {
+                    if (language === 'ar' && item.arabic) return item.arabic;
+                    if (language === 'he' && item.hebrew) return item.hebrew;
+                    return item.text;
+                }).filter(Boolean);
+
+                setMessages(texts.length > 0 ? texts : [t('announceText')]);
             } catch {
                 setMessages([t('announceText')]);
             }
         }
-        loadPromos();
-    }, [t]);
+        loadTicker();
+    }, [language, t]);
 
     if (messages.length === 0) return null;
 
-    // Repeat messages so the marquee loops seamlessly
     const combined = [...messages, ...messages].join('   ✦   ');
 
     return (
