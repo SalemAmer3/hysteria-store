@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
-import { Image as ImageIcon, UploadCloud, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Image as ImageIcon, UploadCloud, AlertCircle, CheckCircle, X, ClipboardPaste } from 'lucide-react';
 
 interface ImageUploadProps {
     value: string;
@@ -16,10 +16,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [dragging, setDragging] = useState(false);
+    const [focused, setFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const dropZoneRef = useRef<HTMLDivElement>(null);
 
+    // ── Core upload function (shared by browse / drag / paste) ──
     const uploadFile = useCallback(async (file: File) => {
-        // Accept image/* including PNG, JPG, WEBP, GIF, SVG
         if (!file.type.startsWith('image/')) {
             setError('Please upload a valid image file (PNG, JPG, WEBP…)');
             return;
@@ -47,15 +49,60 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
         }
     }, [onChange]);
 
-    // --- File input change ---
+    // ── Extract image from ClipboardEvent items ──
+    const extractImageFromClipboard = useCallback((clipboardData: DataTransfer | null): File | null => {
+        if (!clipboardData) return null;
+        const items = clipboardData.items;
+        if (!items) return null;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                return item.getAsFile();
+            }
+        }
+        return null;
+    }, []);
+
+    // ── Global paste listener on document ──
+    // Fires whenever the user presses Ctrl+V / Cmd+V anywhere on the page
+    // while this component is focused OR when there's no other input focused.
+    useEffect(() => {
+        const handleGlobalPaste = (e: ClipboardEvent) => {
+            // Only intercept if the drop-zone is focused OR no text input is active
+            const active = document.activeElement;
+            const isTextInput =
+                active instanceof HTMLInputElement ||
+                active instanceof HTMLTextAreaElement ||
+                (active instanceof HTMLElement && active.isContentEditable);
+
+            // Allow paste only if our zone is focused OR nothing text-editable is active
+            const ourZoneFocused = dropZoneRef.current?.contains(active as Node) || focused;
+
+            if (!ourZoneFocused && isTextInput) return;
+            if (!ourZoneFocused && !isTextInput) return; // don't steal global paste
+
+            // Only proceed if our zone is focused
+            if (!ourZoneFocused) return;
+
+            const file = extractImageFromClipboard(e.clipboardData);
+            if (file) {
+                e.preventDefault();
+                uploadFile(file);
+            }
+        };
+
+        document.addEventListener('paste', handleGlobalPaste);
+        return () => document.removeEventListener('paste', handleGlobalPaste);
+    }, [focused, extractImageFromClipboard, uploadFile]);
+
+    // ── File input browse ──
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) uploadFile(file);
-        // reset input so same file can be re-selected
         e.target.value = '';
     };
 
-    // --- Drag & Drop ---
+    // ── Drag & Drop ──
     const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setDragging(true); };
     const handleDragLeave = () => setDragging(false);
     const handleDrop = (e: React.DragEvent) => {
@@ -65,15 +112,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
         if (file) uploadFile(file);
     };
 
-    // --- Paste (Ctrl+V) ---
+    // ── React onPaste (fires when the div itself is focused and user pastes) ──
     const handlePaste = (e: React.ClipboardEvent) => {
-        const items = e.clipboardData?.items;
-        if (!items) return;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].type.startsWith('image/')) {
-                const file = items[i].getAsFile();
-                if (file) { uploadFile(file); break; }
-            }
+        const file = extractImageFromClipboard(e.clipboardData);
+        if (file) {
+            e.preventDefault();
+            uploadFile(file);
         }
     };
 
@@ -87,15 +131,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
 
             {/* Drop zone */}
             <div
+                ref={dropZoneRef}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onPaste={handlePaste}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
                 tabIndex={0}
                 className={`relative rounded-2xl border-2 border-dashed transition-all outline-none cursor-pointer
                     ${dragging
                         ? 'border-gold-400 bg-gold-400/5 scale-[1.01]'
-                        : 'border-zinc-700 bg-zinc-900/60 hover:border-zinc-500'
+                        : focused
+                            ? 'border-gold-400/50 bg-zinc-900/80'
+                            : 'border-zinc-700 bg-zinc-900/60 hover:border-zinc-500'
                     }`}
                 onClick={() => inputRef.current?.click()}
             >
@@ -133,12 +182,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
                             <UploadCloud size={15} className="text-gold-400" />
                             <span>{uploading ? t('uploading') : t('uploadImage')}</span>
                         </div>
-                        <p className="text-[10px] text-zinc-600">
-                            Drag & drop · Click to browse · Paste (Ctrl+V)
+                        <p className="text-[10px] text-zinc-500">
+                            Drag & drop · Click to browse
                         </p>
-                        <p className="text-[10px] text-zinc-700">
-                            PNG, JPG, WEBP, GIF · Max 8MB
+                        <p className="text-[10px] text-zinc-500 flex items-center gap-1 justify-center md:justify-start">
+                            <ClipboardPaste size={10} className="text-gold-400/70" />
+                            <span>
+                                {focused
+                                    ? <span className="text-gold-400 font-bold">Ready for paste — press Ctrl+V / Cmd+V</span>
+                                    : 'Click here then Ctrl+V / Cmd+V to paste'}
+                            </span>
                         </p>
+                        <p className="text-[10px] text-zinc-700">PNG, JPG, WEBP, GIF · Max 8MB</p>
                     </div>
                 </div>
 

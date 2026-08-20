@@ -29,6 +29,8 @@ export const ProductDetail: React.FC = () => {
             if (!id) return;
             setLoading(true);
             setError(null);
+            // Scroll to top when product loads
+            window.scrollTo({ top: 0, behavior: 'instant' });
             try {
                 const res = await api.products.getPublic(id);
                 const prod = res.data;
@@ -272,6 +274,16 @@ export const ProductDetail: React.FC = () => {
                             {name}
                         </h1>
 
+                        {/* SKU badge */}
+                        {product.sku && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-600">SKU</span>
+                                <span className="font-mono text-[11px] text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md">
+                                    {product.sku}
+                                </span>
+                            </div>
+                        )}
+
                         <div className="text-xs text-zinc-550 flex items-center gap-2 font-semibold">
                             <span className="bg-zinc-900 bg-opacity-70 px-2.5 py-1 rounded-md text-zinc-450 border border-zinc-850">
                                 {categoryName}
@@ -312,45 +324,73 @@ export const ProductDetail: React.FC = () => {
                     {options.length > 0 && (
                         <div className="space-y-5 border-t border-zinc-900/80 pt-6">
 
-                            {/* Color Selector */}
+                            {/* Color Selector — shows shades per color inline */}
                             {uniqueColors.length > 0 && (
-                                <div className="space-y-2.5">
-                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center justify-between">
-                                        <span>{t('selectColor')} ({t('color')})</span>
-                                        {selectedColor && <span className="text-gold-400 font-bold">{selectedColor}</span>}
+                                <div className="space-y-3">
+                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
+                                        {t('selectColor')}
+                                        {selectedColor && <span className="text-gold-400 font-bold ms-2">{selectedColor}</span>}
                                     </span>
                                     <div className="flex flex-wrap gap-2.5">
                                         {uniqueColors.map((colName) => {
                                             const isSelected = selectedColor === colName;
-                                            const matchingOpt = options.find((o: any) => o.color_name === colName);
-                                            const hexColor = matchingOpt?.color;
+                                            const matchingOpts = options.filter((o: any) => o.color_name === colName);
+                                            const hexColor = matchingOpts[0]?.color;
+                                            const shades = Array.from(new Set(matchingOpts.map((o: any) => o.shade).filter(Boolean))) as string[];
 
                                             return (
-                                                <button
-                                                    key={colName}
-                                                    type="button"
-                                                    onClick={() => handleSelectColor(colName)}
-                                                    className={`flex items-center gap-2.5 px-4 py-2.5 border rounded-xl font-sans text-xs transition-all cursor-pointer ${isSelected
-                                                        ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                        : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
+                                                <div key={colName} className="flex flex-col gap-1.5">
+                                                    {/* Color button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSelectColor(colName)}
+                                                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${
+                                                            isSelected
+                                                                ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
+                                                                : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
                                                         }`}
-                                                >
-                                                    {hexColor && (
-                                                        <span
-                                                            className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
-                                                            style={{ backgroundColor: hexColor }}
-                                                        />
+                                                    >
+                                                        {hexColor && (
+                                                            <span
+                                                                className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
+                                                                style={{ backgroundColor: hexColor }}
+                                                            />
+                                                        )}
+                                                        <span>{colName}</span>
+                                                    </button>
+
+                                                    {/* Shade pills — shown under each color when there are shades */}
+                                                    {isSelected && shades.length > 0 && (
+                                                        <div className={`flex flex-col gap-1 ${direction === 'rtl' ? 'pr-2 border-r-2 border-gold-400/30' : 'pl-2 border-l-2 border-gold-400/30'}`}>
+                                                            {shades.map((shade) => {
+                                                                const isShadeSelected = selectedShade === shade;
+                                                                return (
+                                                                    <button
+                                                                        key={shade}
+                                                                        type="button"
+                                                                        onClick={() => handleSelectShade(shade)}
+                                                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left whitespace-nowrap ${
+                                                                            isShadeSelected
+                                                                                ? 'bg-zinc-700 text-white border border-zinc-500'
+                                                                                : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent'
+                                                                        }`}
+                                                                        style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                                                    >
+                                                                        {shade}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     )}
-                                                    <span>{colName}</span>
-                                                </button>
+                                                </div>
                                             );
                                         })}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Shade Selector */}
-                            {availableShades.length > 0 && (
+                            {/* Shade Selector — only shown if no color grouping (standalone shades) */}
+                            {uniqueColors.length === 0 && availableShades.length > 0 && (
                                 <div className="space-y-2.5">
                                     <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center justify-between">
                                         <span>{t('selectShade')} ({t('shade')})</span>
