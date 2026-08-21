@@ -72,7 +72,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { getLocalized, t } = useLanguage();
+    const { t } = useLanguage();
 
     const [cart, setCart] = useState<CartItem[]>(() => {
         const saved = localStorage.getItem('histeria_cart');

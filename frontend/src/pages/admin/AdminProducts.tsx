@@ -262,7 +262,7 @@ export const AdminProducts: React.FC = () => {
                     price: shade.price,
                     image_url: shade.image_url || null,
                     arabic: shade.arabic || null,
-                    hebrew: null,
+                    hebrew: undefined,
                 } as ProductOption))
             );
             const allOptions = [...colorOptions, ...form.options];
