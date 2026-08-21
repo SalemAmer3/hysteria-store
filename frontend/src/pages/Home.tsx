@@ -123,22 +123,61 @@ export const Home: React.FC = () => {
                                         )}
                                     </div>
 
-                                    {/* Children - slide down */}
-                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-80 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                                    {/* Children level 2 - slide down */}
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                                         <div className={`flex flex-col gap-0.5 ${direction === 'rtl' ? 'mr-3 pr-3 border-r-2 border-gold-400/20' : 'ml-3 pl-3 border-l-2 border-gold-400/20'}`}>
-                                            {children.map((child) => (
-                                                <Link
-                                                    key={child.id}
-                                                    to={`/products?category=${child.id}`}
-                                                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-all group"
-                                                >
-                                                    {child.image_url && (
-                                                        <img src={child.image_url} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-70 group-hover:opacity-100" />
-                                                    )}
-                                                    <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                                    <span>{getLocalized(child, 'name')}</span>
-                                                </Link>
-                                            ))}
+                                            {children.map((child) => {
+                                                const grandChildren = categories.filter(c => c.parent_id === child.id);
+                                                const hasGrandChildren = grandChildren.length > 0;
+                                                const isChildExpanded = !!expandedCats[child.id];
+
+                                                return (
+                                                    <div key={child.id} className="flex flex-col">
+                                                        {/* Level 2 row */}
+                                                        <div className="flex items-center justify-between group rounded-lg hover:bg-zinc-900 transition-all">
+                                                            <Link
+                                                                to={`/products?category=${child.id}`}
+                                                                className="flex items-center gap-2.5 flex-1 px-3 py-2 text-xs font-semibold text-zinc-500 hover:text-zinc-200 transition-all"
+                                                            >
+                                                                {child.image_url && (
+                                                                    <img src={child.image_url} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-70 group-hover:opacity-100" />
+                                                                )}
+                                                                <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
+                                                                <span>{getLocalized(child, 'name')}</span>
+                                                            </Link>
+                                                            {hasGrandChildren && (
+                                                                <button
+                                                                    onClick={() => setExpandedCats(prev => ({ ...prev, [child.id]: !prev[child.id] }))}
+                                                                    className="px-2 py-2 text-zinc-600 hover:text-gold-400 transition-colors cursor-pointer flex-shrink-0"
+                                                                >
+                                                                    <ChevronDown size={12} className={`transition-transform duration-300 ${isChildExpanded ? 'rotate-180 text-gold-400' : ''}`} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Level 3 grandchildren */}
+                                                        {hasGrandChildren && (
+                                                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isChildExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                                <div className={`flex flex-col gap-0.5 ${direction === 'rtl' ? 'mr-3 pr-2 border-r border-zinc-800' : 'ml-3 pl-2 border-l border-zinc-800'}`}>
+                                                                    {grandChildren.map((gc) => (
+                                                                        <Link
+                                                                            key={gc.id}
+                                                                            to={`/products?category=${gc.id}`}
+                                                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-600 hover:text-zinc-300 hover:bg-zinc-900/60 transition-all"
+                                                                        >
+                                                                            {gc.image_url && (
+                                                                                <img src={gc.image_url} alt="" className="w-4 h-4 rounded object-cover flex-shrink-0 opacity-60" />
+                                                                            )}
+                                                                            <span className="text-zinc-700 text-[9px]">{direction === 'rtl' ? '←' : '→'}</span>
+                                                                            <span>{getLocalized(gc, 'name')}</span>
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

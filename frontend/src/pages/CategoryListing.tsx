@@ -34,7 +34,15 @@ export const CategoryListing: React.FC = () => {
                 setCategories(catsRes.data.filter((c: any) => c.is_active));
                 setBrands(brandsRes.data);
 
-                const productsRes = await api.products.listPublic(currentPage, 30);
+                // Pass search and brand to backend for server-side filtering
+                // Category is still filtered client-side to support grandchild hierarchy
+                const productsRes = await api.products.listPublic(
+                    currentPage,
+                    100, // load more to support client-side category hierarchy filtering
+                    searchQuery || undefined,
+                    undefined, // category handled client-side
+                    (activeBrandId && activeBrandId !== 'all') ? activeBrandId : undefined,
+                );
                 setProducts(productsRes.data);
                 if (productsRes.pagination) {
                     setTotalPages(productsRes.pagination.totalPages || 1);
@@ -46,7 +54,7 @@ export const CategoryListing: React.FC = () => {
             }
         }
         loadData();
-    }, [currentPage]);
+    }, [currentPage, searchQuery, activeBrandId]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -66,22 +74,20 @@ export const CategoryListing: React.FC = () => {
         if (activeCategoryId && activeCategoryId !== 'all') {
             if (p.category_id !== activeCategoryId) {
                 const targetCategory = categories.find((c) => c.id === p.category_id);
-                if (!targetCategory || targetCategory.parent_id !== activeCategoryId) {
-                    return false;
+                if (!targetCategory) return false;
+                // Check parent match (level 2)
+                if (targetCategory.parent_id === activeCategoryId) {
+                    // ok - direct child
+                } else {
+                    // Check grandparent match (level 3)
+                    const grandparentCat = categories.find((c) => c.id === targetCategory.parent_id);
+                    if (!grandparentCat || grandparentCat.parent_id !== activeCategoryId) {
+                        return false;
+                    }
                 }
             }
         }
-        if (activeBrandId && activeBrandId !== 'all') {
-            if (p.brand_id !== activeBrandId) return false;
-        }
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            const nameMatch = p.name?.toLowerCase().includes(q);
-            const descMatch = p.description?.toLowerCase().includes(q);
-            const arNameMatch = p.arabic?.toLowerCase().includes(q);
-            const heNameMatch = p.hebrew?.toLowerCase().includes(q);
-            if (!nameMatch && !descMatch && !arNameMatch && !heNameMatch) return false;
-        }
+        // brand and search are already filtered server-side
         return true;
     });
 
@@ -138,7 +144,10 @@ export const CategoryListing: React.FC = () => {
                 const hasChildren = children.length > 0;
                 const isExpanded = !!expandedCats[parent.id];
                 const isParentActive = activeCategoryId === parent.id;
-                const isChildActive = children.some(c => c.id === activeCategoryId);
+                const isChildActive = children.some(c => {
+                    if (c.id === activeCategoryId) return true;
+                    return getChildren(c.id).some(gc => gc.id === activeCategoryId);
+                });
                 const isHighlighted = isParentActive || isChildActive;
 
                 return (
@@ -178,26 +187,72 @@ export const CategoryListing: React.FC = () => {
                         {/* Children — animated slide */}
                         <div
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
                             }`}
                         >
                             <div className={`flex flex-col gap-0.5 mt-0.5 ${direction === 'rtl' ? 'mr-4 pr-2 border-r border-zinc-800' : 'ml-4 pl-2 border-l border-zinc-800'}`}>
                                 {children.map((child) => {
+                                    const grandChildren = getChildren(child.id);
+                                    const hasGrandChildren = grandChildren.length > 0;
                                     const isChildSelected = activeCategoryId === child.id;
+                                    const isGrandChildActive = grandChildren.some(gc => gc.id === activeCategoryId);
+                                    const isChildHighlighted = isChildSelected || isGrandChildActive;
+                                    const isChildExpanded = !!expandedCats[child.id];
+
                                     return (
-                                        <button
-                                            key={child.id}
-                                            onClick={() => handleCategoryClick(child.id)}
-                                            className={`w-full flex items-center gap-2 py-1.5 px-3 rounded-lg text-[11px] transition-all cursor-pointer ${
-                                                isChildSelected
-                                                    ? 'bg-gold-400 text-black font-extrabold'
-                                                    : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
-                                            }`}
-                                            style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                        >
-                                            <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                            <span>{getLocalized(child, 'name')}</span>
-                                        </button>
+                                        <div key={child.id}>
+                                            {/* Level 2 row */}
+                                            <div className={`flex items-center justify-between rounded-lg transition-all ${isChildHighlighted ? 'bg-gold-400/10' : ''}`}>
+                                                <button
+                                                    onClick={() => handleCategoryClick(child.id)}
+                                                    className={`flex items-center gap-2 flex-1 py-1.5 px-3 rounded-lg text-[11px] transition-all cursor-pointer ${
+                                                        isChildSelected
+                                                            ? 'bg-gold-400 text-black font-extrabold'
+                                                            : isChildHighlighted
+                                                                ? 'text-gold-400 font-bold'
+                                                                : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
+                                                    }`}
+                                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                                >
+                                                    <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
+                                                    <span>{getLocalized(child, 'name')}</span>
+                                                </button>
+                                                {hasGrandChildren && (
+                                                    <button
+                                                        onClick={() => toggleExpand(child.id)}
+                                                        className="p-1 rounded cursor-pointer flex-shrink-0 hover:text-gold-400 transition-colors text-zinc-600"
+                                                    >
+                                                        <ChevronDown size={11} className={`transition-transform duration-300 ${isChildExpanded ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* Level 3 grandchildren */}
+                                            {hasGrandChildren && (
+                                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isChildExpanded ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                    <div className={`flex flex-col gap-0.5 mt-0.5 ${direction === 'rtl' ? 'mr-4 pr-2 border-r border-zinc-800/50' : 'ml-4 pl-2 border-l border-zinc-800/50'}`}>
+                                                        {grandChildren.map((gc) => {
+                                                            const isGcSelected = activeCategoryId === gc.id;
+                                                            return (
+                                                                <button
+                                                                    key={gc.id}
+                                                                    onClick={() => handleCategoryClick(gc.id)}
+                                                                    className={`w-full flex items-center gap-2 py-1 px-3 rounded-lg text-[10px] transition-all cursor-pointer ${
+                                                                        isGcSelected
+                                                                            ? 'bg-gold-400 text-black font-extrabold'
+                                                                            : 'text-zinc-600 hover:bg-zinc-900 hover:text-zinc-300'
+                                                                    }`}
+                                                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
+                                                                >
+                                                                    <span className="text-zinc-700 text-[9px]">{direction === 'rtl' ? '←' : '→'}</span>
+                                                                    <span>{getLocalized(gc, 'name')}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     );
                                 })}
                             </div>

@@ -223,6 +223,164 @@ body.light .border-gold-400 {
   border-color: #b8a99a !important;
 }
 
+/* ── Light: Product card specific hover fix ── */
+body.light .group.relative.rounded-2xl:hover {
+  background-color: #f0ebe5 !important;
+  border-color: rgba(160, 132, 92, 0.4) !important;
+}
+
+/* Product card overlay on hover — soften */
+body.light .group:hover .from-black\/90 {
+  --tw-gradient-from: rgba(240, 230, 220, 0.9) !important;
+}
+body.light .group:hover .via-black\/70 {
+  --tw-gradient-via: rgba(240, 230, 220, 0.7) !important;
+}
+
+/* Brand tag in product card */
+body.light .bg-black\/75 {
+  background-color: rgba(255, 250, 245, 0.85) !important;
+  border-color: #d4cbc3 !important;
+  color: #a0845c !important;
+}
+
+/* Wishlist button in card */
+body.light .bg-black\/60 {
+  background-color: rgba(255, 250, 245, 0.8) !important;
+  border-color: #d4cbc3 !important;
+}
+
+/* Sizes overlay in card hover */
+body.light .bg-zinc-900\/90 {
+  background-color: rgba(240, 232, 222, 0.95) !important;
+  border-color: #c8bdb6 !important;
+  color: #3d2e24 !important;
+}
+
+/* Link hover text */
+body.light a.hover\:text-gold-400:hover {
+  color: #8e6e42 !important;
+}
+
+/* ── Light: Opacity/backdrop backgrounds ── */
+
+/* Black backgrounds with opacity — turn to warm light */
+body.light .bg-black\/60,
+body.light .bg-black\/70,
+body.light .bg-black\/75,
+body.light .bg-black\/80,
+body.light .bg-black\/90 {
+  background-color: rgba(249, 245, 240, 0.88) !important;
+}
+
+/* Dark gradient overlay on hover (product card sizes strip) */
+body.light .bg-gradient-to-t.from-black\/90 {
+  background: linear-gradient(to top, rgba(230, 220, 208, 0.93), rgba(230, 220, 208, 0.6), transparent) !important;
+}
+
+/* ── Light: All hover:bg-zinc-* in light mode ── */
+body.light .hover\:bg-zinc-900:hover {
+  background-color: #e0d8d0 !important;
+  color: #1c1917 !important;
+}
+body.light .hover\:bg-zinc-850:hover {
+  background-color: #e5ddd5 !important;
+  color: #1c1917 !important;
+}
+body.light .hover\:bg-zinc-800:hover {
+  background-color: #ddd4cb !important;
+  color: #1c1917 !important;
+}
+body.light .hover\:bg-zinc-700:hover {
+  background-color: #d5ccc2 !important;
+  color: #1c1917 !important;
+}
+
+/* hover:bg-zinc-900/50 and similar opacity variants */
+body.light .hover\:bg-zinc-900\/50:hover {
+  background-color: rgba(210, 200, 190, 0.5) !important;
+}
+
+/* Text hover to white → dark in light mode */
+body.light .hover\:text-white:hover {
+  color: #1c1917 !important;
+}
+body.light .hover\:text-zinc-200:hover {
+  color: #3a302a !important;
+}
+body.light .hover\:text-zinc-100:hover {
+  color: #2c2520 !important;
+}
+
+/* Gold hover stays warm */
+body.light .hover\:text-gold-400:hover {
+  color: #8e6e42 !important;
+}
+body.light .hover\:bg-gold-500:hover {
+  background-color: #8e7050 !important;
+}
+
+/* Border hovers */
+body.light .hover\:border-zinc-700:hover {
+  border-color: #b8a99a !important;
+}
+body.light .hover\:border-zinc-800:hover {
+  border-color: #c4b5a8 !important;
+}
+
+/* Gold selected buttons — readable text */
+body.light .bg-gold-400 {
+  background-color: #a0845c !important;
+  color: #ffffff !important;
+}
+body.light .bg-gold-400.text-black,
+body.light .text-black.bg-gold-400 {
+  color: #ffffff !important;
+}
+body.light .hover\:bg-gold-500:hover {
+  background-color: #8e7050 !important;
+  color: #ffffff !important;
+}
+
+/* Rose/red hover buttons */
+body.light .hover\:text-red-400:hover {
+  color: #b91c1c !important;
+}
+body.light .hover\:text-rose-400:hover,
+body.light .hover\:text-rose-500:hover {
+  color: #be123c !important;
+}
+
+/* Blue hover */
+body.light .hover\:text-blue-500:hover {
+  color: #1d4ed8 !important;
+}
+
+/* Emerald hover */
+body.light .hover\:text-emerald-500:hover {
+  color: #059669 !important;
+}
+
+/* Announcement bar in light mode */
+body.light .w-full.bg-black.text-white.py-2 {
+  background-color: #ede8e3 !important;
+  border-bottom-color: #d4cbc3 !important;
+}
+body.light .w-full.bg-black.text-white.py-2 .animate-marquee-track {
+  color: #4a3728 !important;
+  text-shadow: none !important;
+}
+
+/* Scale hover — keep */
+body.light .hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+/* Opacity hover — keep */
+body.light .hover\:opacity-100:hover {
+  opacity: 1;
+}
+
 /* ── Light: Custom scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #08080a; }
@@ -255,15 +413,19 @@ body.light .shimmer {
   -webkit-text-fill-color: transparent;
 }
 
-/* Marquee animation for announcement bar */
+/* Marquee animation for announcement bar — seamless infinite scroll */
 @keyframes marquee {
-  0%   { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
-.animate-marquee {
-  display: inline-block;
+.animate-marquee-track {
+  display: flex;
+  width: max-content;
   animation: marquee 18s linear infinite;
   white-space: nowrap;
+}
+.animate-marquee-track:hover {
+  animation-play-state: paused;
 }
 
 /* Admin form inputs & selects */

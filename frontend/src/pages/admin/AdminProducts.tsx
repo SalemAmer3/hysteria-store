@@ -46,6 +46,24 @@ const emptyOption: ProductOption = {
     size: '', color_name: '', shade: '', color: '', price: 0, image_url: '', arabic: '', hebrew: ''
 };
 
+// ── Color group structure for UI ──────────────────────────────────
+interface ShadeEntry {
+    id?: string;         // existing option id when editing
+    shade: string;
+    price: number;
+    size: string;
+    image_url: string;
+    arabic: string;
+}
+
+interface ColorGroup {
+    color_name: string;
+    color: string;       // hex
+    shades: ShadeEntry[];
+}
+
+const emptyShade = (): ShadeEntry => ({ shade: '', price: 0, size: '', image_url: '', arabic: '' });
+
 export const AdminProducts: React.FC = () => {
     const { t, direction } = useLanguage();
     const [products, setProducts] = useState<any[]>([]);
@@ -62,6 +80,38 @@ export const AdminProducts: React.FC = () => {
     const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
     const [translating, setTranslating] = useState(false);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Color groups state — drives the new color+shades UI
+    const [colorGroups, setColorGroups] = useState<ColorGroup[]>([]);
+
+    // ── Color group helpers ────────────────────────────────────────
+    const addColorGroup = () =>
+        setColorGroups(prev => [...prev, { color_name: '', color: '#888888', shades: [emptyShade()] }]);
+
+    const removeColorGroup = (gi: number) =>
+        setColorGroups(prev => prev.filter((_, i) => i !== gi));
+
+    const updateColorGroup = (gi: number, field: 'color_name' | 'color', value: string) =>
+        setColorGroups(prev => prev.map((g, i) => i === gi ? { ...g, [field]: value } : g));
+
+    const addShade = (gi: number) =>
+        setColorGroups(prev => prev.map((g, i) => i === gi ? { ...g, shades: [...g.shades, emptyShade()] } : g));
+
+    const removeShade = (gi: number, si: number) =>
+        setColorGroups(prev => prev.map((g, i) => i === gi ? { ...g, shades: g.shades.filter((_, j) => j !== si) } : g));
+
+    const updateShade = (gi: number, si: number, field: keyof ShadeEntry, value: any) =>
+        setColorGroups(prev => prev.map((g, i) => i === gi
+            ? { ...g, shades: g.shades.map((s, j) => j === si ? { ...s, [field]: value } : s) }
+            : g
+        ));
+
+    // Debounce search input — 400ms
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 400);
+        return () => clearTimeout(timer);
+    }, [search]);
 
     // Auto-translate description using MyMemory free API
     // Source: Arabic (arabic_description) → translates to EN (description) + HE (hebrew_description)
@@ -92,7 +142,7 @@ export const AdminProducts: React.FC = () => {
         setLoading(true);
         try {
             const [prodsRes, catsRes, brandsRes] = await Promise.all([
-                api.products.listAdmin(page, 15),
+                api.products.listAdmin(page, 15, debouncedSearch || undefined),
                 api.categories.listPublic(),
                 api.brands.listPublic(),
             ]);
@@ -105,13 +155,17 @@ export const AdminProducts: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [page]);
+    }, [page, debouncedSearch]);
+
+    // Reset to page 1 when search changes
+    useEffect(() => { setPage(1); }, [debouncedSearch]);
 
     useEffect(() => { loadProducts(); }, [loadProducts]);
 
     const openCreate = () => {
         setEditProduct(null);
         setForm(emptyForm);
+        setColorGroups([]);
         setError(null);
         setShowForm(true);
     };
@@ -121,6 +175,30 @@ export const AdminProducts: React.FC = () => {
             const res = await api.products.getAdmin(prod.id);
             const p = res.data;
             setEditProduct(p);
+
+            // Separate color options from plain options
+            const allOptions: any[] = p.options || [];
+            const colorOptions = allOptions.filter((o: any) => o.color_name);
+            const plainOptions = allOptions.filter((o: any) => !o.color_name);
+
+            // Build colorGroups from existing options grouped by color_name
+            const groupMap: Record<string, ColorGroup> = {};
+            colorOptions.forEach((o: any) => {
+                const key = o.color_name;
+                if (!groupMap[key]) {
+                    groupMap[key] = { color_name: key, color: o.color || '#888888', shades: [] };
+                }
+                groupMap[key].shades.push({
+                    id: o.id,
+                    shade: o.shade || '',
+                    price: Number(o.price),
+                    size: o.size || '',
+                    image_url: o.image_url || '',
+                    arabic: o.arabic || '',
+                });
+            });
+            setColorGroups(Object.values(groupMap));
+
             setForm({
                 name: p.name || '',
                 sku: p.sku || '',
@@ -131,10 +209,9 @@ export const AdminProducts: React.FC = () => {
                 brand_id: p.brand_id || '',
                 arabic: p.arabic || '',
                 hebrew: p.hebrew || '',
-                options: (p.options || []).map((o: any) => ({
-                    id: o.id, size: o.size || '', color_name: o.color_name || '',
-                    shade: o.shade || '', color: o.color || '', price: Number(o.price), image_url: o.image_url || '',
-                    arabic: o.arabic || '', hebrew: o.hebrew || '',
+                options: plainOptions.map((o: any) => ({
+                    id: o.id, size: o.size || '', color_name: '', shade: '', color: '',
+                    price: Number(o.price), image_url: o.image_url || '', arabic: o.arabic || '', hebrew: o.hebrew || '',
                 })),
                 images: (p.images || []).map((img: any) => ({ id: img.id, image_url: img.image_url })),
             });
@@ -174,6 +251,22 @@ export const AdminProducts: React.FC = () => {
         try {
             let productId: string;
 
+            // Build flat options list: colorGroups → options + plain options
+            const colorOptions: ProductOption[] = colorGroups.flatMap(group =>
+                group.shades.map(shade => ({
+                    id: shade.id,
+                    color_name: group.color_name,
+                    color: group.color,
+                    shade: shade.shade || null,
+                    size: shade.size || null,
+                    price: shade.price,
+                    image_url: shade.image_url || null,
+                    arabic: shade.arabic || null,
+                    hebrew: null,
+                } as ProductOption))
+            );
+            const allOptions = [...colorOptions, ...form.options];
+
             if (editProduct) {
                 await api.products.update(editProduct.id, {
                     name: form.name, description: form.description || null,
@@ -185,13 +278,11 @@ export const AdminProducts: React.FC = () => {
                 });
                 productId = editProduct.id;
 
-                // Sync images: delete old ones not in form, add new ones
+                // Sync images
                 const existingImageIds = (editProduct.images || []).map((img: any) => img.id);
                 const formImageIds = form.images.filter(img => img.id).map(img => img.id);
                 for (const imgId of existingImageIds) {
-                    if (!formImageIds.includes(imgId)) {
-                        await api.productImages.delete(imgId);
-                    }
+                    if (!formImageIds.includes(imgId)) await api.productImages.delete(imgId);
                 }
                 for (const img of form.images) {
                     if (!img.id && img.image_url) {
@@ -199,29 +290,23 @@ export const AdminProducts: React.FC = () => {
                     }
                 }
 
-                // Sync options: delete old ones, add/update
+                // Sync options: delete removed, update existing, create new
                 const existingOptIds = (editProduct.options || []).map((o: any) => o.id);
-                const formOptIds = form.options.filter(o => o.id).map(o => o.id);
+                const formOptIds = allOptions.filter(o => o.id).map(o => o.id);
                 for (const optId of existingOptIds) {
-                    if (!formOptIds.includes(optId)) {
-                        await api.productOptions.delete(optId);
-                    }
+                    if (!formOptIds.includes(optId)) await api.productOptions.delete(optId);
                 }
-                for (const opt of form.options) {
+                for (const opt of allOptions) {
+                    const payload = {
+                        size: opt.size || null, color_name: opt.color_name || null,
+                        shade: opt.shade || null, color: opt.color || null,
+                        price: opt.price, image_url: opt.image_url || null,
+                        arabic: opt.arabic || null, hebrew: opt.hebrew || null,
+                    };
                     if (opt.id) {
-                        await api.productOptions.update(opt.id, {
-                            size: opt.size || null, color_name: opt.color_name || null,
-                            shade: opt.shade || null,
-                            color: opt.color || null, price: opt.price,
-                            image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
-                        });
+                        await api.productOptions.update(opt.id, payload);
                     } else {
-                        await api.productOptions.create({
-                            product_id: productId, size: opt.size || null, color_name: opt.color_name || null,
-                            shade: opt.shade || null,
-                            color: opt.color || null, price: opt.price,
-                            image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
-                        });
+                        await api.productOptions.create({ product_id: productId, ...payload });
                     }
                 }
             } else {
@@ -240,12 +325,13 @@ export const AdminProducts: React.FC = () => {
                         await api.productImages.create({ product_id: productId, image_url: img.image_url });
                     }
                 }
-                for (const opt of form.options) {
+                for (const opt of allOptions) {
                     await api.productOptions.create({
-                        product_id: productId, size: opt.size || null, color_name: opt.color_name || null,
-                        shade: opt.shade || null,
-                        color: opt.color || null, price: opt.price,
-                        image_url: opt.image_url || null, arabic: opt.arabic || null, hebrew: opt.hebrew || null,
+                        product_id: productId,
+                        size: opt.size || null, color_name: opt.color_name || null,
+                        shade: opt.shade || null, color: opt.color || null,
+                        price: opt.price, image_url: opt.image_url || null,
+                        arabic: opt.arabic || null, hebrew: opt.hebrew || null,
                     });
                 }
             }
@@ -298,10 +384,10 @@ export const AdminProducts: React.FC = () => {
                         Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className="h-20 bg-zinc-950 border border-zinc-900 rounded-xl shimmer" />
                         ))
-                    ) : products.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()) || p.arabic?.includes(search) || p.category?.name?.toLowerCase().includes(search.toLowerCase()) || p.brand?.name?.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
+                    ) : products.length === 0 ? (
                         <div className="text-center py-16 text-zinc-500 border border-dashed border-zinc-800 rounded-2xl">{t('noProducts')}</div>
                     ) : (
-                        products.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()) || p.arabic?.includes(search) || p.category?.name?.toLowerCase().includes(search.toLowerCase()) || p.brand?.name?.toLowerCase().includes(search.toLowerCase())).map((prod) => (
+                        products.map((prod) => (
                             <div key={prod.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
                                 <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
                                     {prod.images?.[0]?.image_url
@@ -460,64 +546,181 @@ export const AdminProducts: React.FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Options (Size / Color / Price) */}
-                                <div className="space-y-3 border-t border-zinc-900 pt-5">
+                                {/* Options (Size / Color / Shades / Price) */}
+                                <div className="space-y-4 border-t border-zinc-900 pt-5">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">Options (Size / Color / Price)</span>
-                                        <button type="button" onClick={addOption} className="text-xs text-gold-400 hover:text-gold-300 font-bold cursor-pointer flex items-center gap-1">
-                                            <Plus size={14} /> Add Option
+                                        <div>
+                                            <span className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">الألوان والدرجات</span>
+                                            <p className="text-[10px] text-zinc-600 mt-0.5">كل لون يمكن أن يحتوي على أكثر من درجة</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={addColorGroup}
+                                            className="flex items-center gap-1.5 px-3 py-2 bg-gold-400 hover:bg-gold-500 text-black rounded-xl text-xs font-extrabold cursor-pointer transition-all"
+                                        >
+                                            <Plus size={14} /> إضافة لون
                                         </button>
                                     </div>
-                                    {form.options.map((opt, i) => {
-                                        const key = `opt-${i}`;
-                                        const isExpanded = expandedOptions[key] !== false; // default open
-                                        return (
-                                            <div key={i} className="bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden">
-                                                <div className="flex items-center justify-between px-4 py-3 cursor-pointer"
-                                                    onClick={() => setExpandedOptions(prev => ({ ...prev, [key]: !isExpanded }))}>
-                                                    <span className="text-xs font-bold text-zinc-300">
-                                                        Option {i + 1}: {[opt.color_name, opt.shade, opt.size].filter(Boolean).join(' - ') || 'New Option'}
-                                                        {opt.price > 0 && <span className="text-gold-400 ml-2 font-sans">₪{opt.price}</span>}
-                                                    </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <button type="button" onClick={e => { e.stopPropagation(); removeOption(i); }} className="text-rose-400 hover:text-rose-300 cursor-pointer"><X size={14} /></button>
-                                                        {isExpanded ? <ChevronUp size={16} className="text-zinc-500" /> : <ChevronDown size={16} className="text-zinc-500" />}
-                                                    </div>
+
+                                    {colorGroups.map((group, gi) => (
+                                        <div key={gi} className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20">
+                                            {/* Color header */}
+                                            <div className="flex items-center gap-3 px-4 py-3 bg-zinc-900/60 border-b border-zinc-800">
+                                                <div
+                                                    className="w-6 h-6 rounded-full border-2 border-zinc-700 flex-shrink-0 cursor-pointer relative overflow-hidden"
+                                                    style={{ backgroundColor: group.color || '#888' }}
+                                                >
+                                                    <input
+                                                        type="color"
+                                                        value={group.color || '#888888'}
+                                                        onChange={e => updateColorGroup(gi, 'color', e.target.value)}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        title="اختر اللون"
+                                                    />
                                                 </div>
-                                                {isExpanded && (
-                                                    <div className="border-t border-zinc-800 p-4 grid grid-cols-2 gap-3">
-                                                        <FormField label={t('sizeOption')}>
-                                                            <input type="text" value={opt.size || ''} onChange={e => handleOptionChange(i, 'size', e.target.value)} className="admin-input" placeholder="50ml / S / M" />
-                                                        </FormField>
-                                                        <FormField label={t('priceOption')} required>
-                                                            <input type="number" min="0" step="0.01" required value={opt.price || ''} onChange={e => handleOptionChange(i, 'price', Number(e.target.value))} className="admin-input" />
-                                                        </FormField>
-                                                        <FormField label={t('colorNameOption')}>
-                                                            <input type="text" value={opt.color_name || ''} onChange={e => handleOptionChange(i, 'color_name', e.target.value)} className="admin-input" placeholder="Red / أحمر" />
-                                                        </FormField>
-                                                        <FormField label={t('shadeOption')}>
-                                                            <input type="text" value={opt.shade || ''} onChange={e => handleOptionChange(i, 'shade', e.target.value)} className="admin-input" placeholder="Dark Red / أحمر غامق" />
-                                                        </FormField>
-                                                        <FormField label={t('colorOptionHex')}>
-                                                            <div className="flex gap-2 items-center">
-                                                                <input type="color" value={opt.color || '#ffffff'} onChange={e => handleOptionChange(i, 'color', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-zinc-800" />
-                                                                <input type="text" value={opt.color || ''} onChange={e => handleOptionChange(i, 'color', e.target.value)} className="admin-input flex-1" placeholder="#ffffff" />
+                                                <input
+                                                    type="text"
+                                                    value={group.color_name}
+                                                    onChange={e => updateColorGroup(gi, 'color_name', e.target.value)}
+                                                    placeholder="اسم اللون (مثال: أحمر / Red)"
+                                                    className="admin-input flex-1 text-sm font-bold"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeColorGroup(gi)}
+                                                    className="text-rose-400 hover:text-rose-300 cursor-pointer flex-shrink-0 p-1"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            </div>
+
+                                            {/* Shades list */}
+                                            <div className="p-3 space-y-2">
+                                                {group.shades.map((shade, si) => {
+                                                    const key = `shade-${gi}-${si}`;
+                                                    const isExp = expandedOptions[key] !== false;
+                                                    return (
+                                                        <div key={si} className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950/40">
+                                                            {/* Shade header row */}
+                                                            <div
+                                                                className="flex items-center justify-between px-3 py-2 cursor-pointer"
+                                                                onClick={() => setExpandedOptions(prev => ({ ...prev, [key]: !isExp }))}
+                                                            >
+                                                                <span className="text-[11px] font-semibold text-zinc-300 flex items-center gap-2">
+                                                                    <span className="text-zinc-500">درجة {si + 1}:</span>
+                                                                    <span className="text-zinc-200">{shade.shade || '—'}</span>
+                                                                    {shade.price > 0 && <span className="text-gold-400 font-sans text-xs">₪{shade.price}</span>}
+                                                                </span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={e => { e.stopPropagation(); removeShade(gi, si); }}
+                                                                        className="text-rose-400 hover:text-rose-300 cursor-pointer"
+                                                                    >
+                                                                        <X size={13} />
+                                                                    </button>
+                                                                    {isExp ? <ChevronUp size={14} className="text-zinc-500" /> : <ChevronDown size={14} className="text-zinc-500" />}
+                                                                </div>
                                                             </div>
-                                                        </FormField>
-                                                        <FormField label={t('prodNameAr')}>
-                                                            <input type="text" value={opt.arabic || ''} onChange={e => handleOptionChange(i, 'arabic', e.target.value)} className="admin-input" dir="rtl" />
-                                                        </FormField>
-                                                        <FormField label={t('prodNameHe')}>
-                                                            <input type="text" value={opt.hebrew || ''} onChange={e => handleOptionChange(i, 'hebrew', e.target.value)} className="admin-input" dir="rtl" />
-                                                        </FormField>
-                                                        <div className="col-span-2">
-                                                            <ImageUpload label="Option Image" value={opt.image_url || ''} onChange={url => handleOptionChange(i, 'image_url', url)} />
+
+                                                            {/* Shade fields */}
+                                                            {isExp && (
+                                                                <div className="border-t border-zinc-800 p-3 grid grid-cols-2 gap-3">
+                                                                    <FormField label="اسم الدرجة" required>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={shade.shade || ''}
+                                                                            onChange={e => updateShade(gi, si, 'shade', e.target.value)}
+                                                                            className="admin-input"
+                                                                            placeholder="أحمر غامق / Dark Red"
+                                                                        />
+                                                                    </FormField>
+                                                                    <FormField label={t('priceOption')} required>
+                                                                        <input
+                                                                            type="number" min="0" step="0.01" required
+                                                                            value={shade.price || ''}
+                                                                            onChange={e => updateShade(gi, si, 'price', Number(e.target.value))}
+                                                                            className="admin-input"
+                                                                        />
+                                                                    </FormField>
+                                                                    <FormField label={t('sizeOption')}>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={shade.size || ''}
+                                                                            onChange={e => updateShade(gi, si, 'size', e.target.value)}
+                                                                            className="admin-input"
+                                                                            placeholder="50ml / S / M"
+                                                                        />
+                                                                    </FormField>
+                                                                    <FormField label={t('prodNameAr')}>
+                                                                        <input type="text" value={shade.arabic || ''} onChange={e => updateShade(gi, si, 'arabic', e.target.value)} className="admin-input" dir="rtl" />
+                                                                    </FormField>
+                                                                    <div className="col-span-2">
+                                                                        <ImageUpload label="صورة الدرجة (اختياري)" value={shade.image_url || ''} onChange={url => updateShade(gi, si, 'image_url', url)} />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+
+                                                {/* Add shade button */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addShade(gi)}
+                                                    className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-zinc-700 rounded-lg text-[11px] text-zinc-500 hover:text-gold-400 hover:border-gold-400/50 transition-all cursor-pointer"
+                                                >
+                                                    <Plus size={13} /> إضافة درجة لهذا اللون
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Plain options without color (size/price only) */}
+                                    <div className="pt-2 border-t border-zinc-800/50">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[10px] text-zinc-600 uppercase font-extrabold tracking-wider">خيارات بدون لون (حجم / سعر فقط)</span>
+                                            <button
+                                                type="button"
+                                                onClick={addOption}
+                                                className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-gold-400 font-bold cursor-pointer"
+                                            >
+                                                <Plus size={12} /> إضافة
+                                            </button>
+                                        </div>
+                                        {form.options.map((opt, i) => {
+                                            const key = `opt-${i}`;
+                                            const isExpanded = expandedOptions[key] !== false;
+                                            return (
+                                                <div key={i} className="bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden mb-2">
+                                                    <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer"
+                                                        onClick={() => setExpandedOptions(prev => ({ ...prev, [key]: !isExpanded }))}>
+                                                        <span className="text-xs font-bold text-zinc-400">
+                                                            {opt.size || 'خيار جديد'}
+                                                            {opt.price > 0 && <span className="text-gold-400 ml-2 font-sans">₪{opt.price}</span>}
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <button type="button" onClick={e => { e.stopPropagation(); removeOption(i); }} className="text-rose-400 hover:text-rose-300 cursor-pointer"><X size={13} /></button>
+                                                            {isExpanded ? <ChevronUp size={14} className="text-zinc-500" /> : <ChevronDown size={14} className="text-zinc-500" />}
                                                         </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                                    {isExpanded && (
+                                                        <div className="border-t border-zinc-800 p-3 grid grid-cols-2 gap-3">
+                                                            <FormField label={t('sizeOption')}>
+                                                                <input type="text" value={opt.size || ''} onChange={e => handleOptionChange(i, 'size', e.target.value)} className="admin-input" placeholder="50ml / S / M" />
+                                                            </FormField>
+                                                            <FormField label={t('priceOption')} required>
+                                                                <input type="number" min="0" step="0.01" required value={opt.price || ''} onChange={e => handleOptionChange(i, 'price', Number(e.target.value))} className="admin-input" />
+                                                            </FormField>
+                                                            <div className="col-span-2">
+                                                                <ImageUpload label="صورة الخيار" value={opt.image_url || ''} onChange={url => handleOptionChange(i, 'image_url', url)} />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
                                 {/* Save Controls */}

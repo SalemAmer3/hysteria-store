@@ -324,7 +324,7 @@ export const ProductDetail: React.FC = () => {
                     {options.length > 0 && (
                         <div className="space-y-5 border-t border-zinc-900/80 pt-6">
 
-                            {/* Color Selector — shows shades per color inline */}
+                            {/* Color Selector */}
                             {uniqueColors.length > 0 && (
                                 <div className="space-y-3">
                                     <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
@@ -336,53 +336,70 @@ export const ProductDetail: React.FC = () => {
                                             const isSelected = selectedColor === colName;
                                             const matchingOpts = options.filter((o: any) => o.color_name === colName);
                                             const hexColor = matchingOpts[0]?.color;
-                                            const shades = Array.from(new Set(matchingOpts.map((o: any) => o.shade).filter(Boolean))) as string[];
+                                            const shadesCount = Array.from(new Set(matchingOpts.map((o: any) => o.shade).filter(Boolean))).length;
 
                                             return (
-                                                <div key={colName} className="flex flex-col gap-1.5">
-                                                    {/* Color button */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleSelectColor(colName)}
-                                                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${
-                                                            isSelected
-                                                                ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                                : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
-                                                        }`}
-                                                    >
-                                                        {hexColor && (
-                                                            <span
-                                                                className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
-                                                                style={{ backgroundColor: hexColor }}
-                                                            />
-                                                        )}
-                                                        <span>{colName}</span>
-                                                    </button>
-
-                                                    {/* Shade pills — shown under each color when there are shades */}
-                                                    {isSelected && shades.length > 0 && (
-                                                        <div className={`flex flex-col gap-1 ${direction === 'rtl' ? 'pr-2 border-r-2 border-gold-400/30' : 'pl-2 border-l-2 border-gold-400/30'}`}>
-                                                            {shades.map((shade) => {
-                                                                const isShadeSelected = selectedShade === shade;
-                                                                return (
-                                                                    <button
-                                                                        key={shade}
-                                                                        type="button"
-                                                                        onClick={() => handleSelectShade(shade)}
-                                                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left whitespace-nowrap ${
-                                                                            isShadeSelected
-                                                                                ? 'bg-zinc-700 text-white border border-zinc-500'
-                                                                                : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent'
-                                                                        }`}
-                                                                        style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                                                    >
-                                                                        {shade}
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                        </div>
+                                                <button
+                                                    key={colName}
+                                                    type="button"
+                                                    onClick={() => handleSelectColor(colName)}
+                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
+                                                            : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
+                                                    }`}
+                                                >
+                                                    {hexColor && (
+                                                        <span
+                                                            className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
+                                                            style={{ backgroundColor: hexColor }}
+                                                        />
                                                     )}
-                                                </div>
+                                                    <span>{colName}</span>
+                                                    {shadesCount > 0 && (
+                                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-500'}`}>
+                                                            {shadesCount}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Shade Selector — shown as dedicated section after color is picked */}
+                            {selectedColor && availableShades.length > 0 && (
+                                <div className="space-y-2.5 bg-zinc-900/30 border border-zinc-800 rounded-2xl p-4">
+                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400 inline-block flex-shrink-0"></span>
+                                        {t('selectShade')}
+                                        {selectedShade && <span className="text-gold-400 font-bold normal-case tracking-normal">{selectedShade}</span>}
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableShades.map((shade) => {
+                                            const isShadeSelected = selectedShade === shade;
+                                            const shadeOpt = options.find((o: any) => o.color_name === selectedColor && o.shade === shade);
+                                            const shadeHex = shadeOpt?.color;
+                                            return (
+                                                <button
+                                                    key={shade}
+                                                    type="button"
+                                                    onClick={() => handleSelectShade(shade)}
+                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                                                        isShadeSelected
+                                                            ? 'bg-zinc-700 text-white border-zinc-500 shadow-sm'
+                                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border-zinc-800'
+                                                    }`}
+                                                >
+                                                    {shadeHex && (
+                                                        <span
+                                                            className="w-3 h-3 rounded-full border border-black/30 flex-shrink-0"
+                                                            style={{ backgroundColor: shadeHex }}
+                                                        />
+                                                    )}
+                                                    <span>{shade}</span>
+                                                </button>
                                             );
                                         })}
                                     </div>
@@ -393,7 +410,7 @@ export const ProductDetail: React.FC = () => {
                             {uniqueColors.length === 0 && availableShades.length > 0 && (
                                 <div className="space-y-2.5">
                                     <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center justify-between">
-                                        <span>{t('selectShade')} ({t('shade')})</span>
+                                        <span>{t('selectShade')}</span>
                                         {selectedShade && <span className="text-gold-400 font-bold">{selectedShade}</span>}
                                     </span>
                                     <div className="flex flex-wrap gap-2.5">

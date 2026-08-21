@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 // import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Search, ShoppingBag, Heart, Menu, X, Sun, Moon } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Menu, X, Sun, Moon, Instagram, Facebook, MessageCircle } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
     const { language, setLanguage, direction, t } = useLanguage();
@@ -50,12 +50,39 @@ export const Navbar: React.FC = () => {
         <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'backdrop-blur-md bg-black/90 border-b border-zinc-900 shadow-lg' : 'bg-black/95'
             }`}>
             {/* Top micro-bar for quick links */}
-            <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center text-xs border-b border-zinc-900 border-opacity-50 text-zinc-400">
+            <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center text-xs border-b border-zinc-900 border-opacity-50 text-zinc-400">
                 <div>
                     <span>{t('stockStatus')}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    {/* Language Switcher only in top bar */}
+                    {/* Social Media Icons */}
+                    <a
+                        href="https://www.facebook.com/share/1B5VqeTtTh/?mibextid=wwXIfr"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-zinc-400 hover:text-blue-500 transition-colors p-1"
+                        title="Facebook"
+                    >
+                        <Facebook size={18} />
+                    </a>
+                    <a
+                        href="https://www.instagram.com/hysteria.he"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-zinc-400 hover:text-white transition-colors p-1"
+                        title="Instagram"
+                    >
+                        <Instagram size={18} />
+                    </a>
+                    <a
+                        href="https://wa.me/972593957882"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-zinc-400 hover:text-emerald-500 transition-colors p-1"
+                        title="WhatsApp"
+                    >
+                        <MessageCircle size={18} />
+                    </a>
                 </div>
             </div>
 

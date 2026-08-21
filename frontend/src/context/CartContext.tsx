@@ -294,30 +294,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const { subtotal, discount, total } = getCartTotal();
 
-        // Setup lines based on language
-        const titleEmoji = '🛍️';
-        const checkLine = t('whatsAppTemplateTitle');
+        // Always send message in Arabic regardless of current language
+        let message = `🛍️ *طلب جديد من متجر هستيريا* 🛍️\n\n`;
 
-        let message = `${titleEmoji} ${checkLine}\n\n`;
-
-        // Customer details
-        message += `👤 *${t('fullname')}:* ${details.fullname}\n`;
-        message += `📞 *${t('phone')}:* ${details.phone}\n`;
-        message += `📍 *${t('city')}:* ${details.city}\n`;
-        message += `🏠 *${t('addressDetails')}:* ${details.address}\n\n`;
-        message += `--- ${t('orderSummary')} ---\n\n`;
+        // Customer details - always Arabic labels
+        message += `👤 *الاسم الكامل:* ${details.fullname}\n`;
+        message += `📞 *رقم الهاتف:* ${details.phone}\n`;
+        if (details.city) message += `📍 *المدينة / المنطقة:* ${details.city}\n`;
+        if (details.address) message += `🏠 *العنوان بالتفصيل:* ${details.address}\n`;
+        message += `\n--- ملخص الطلب ---\n\n`;
 
         selectedCartItems.forEach((item, index) => {
-            const prodName = getLocalized(item.product, 'name');
-            const sizeName = item.option.size ? getLocalized(item.option, 'size') : '';
-            const colorName = item.option.color_name ? getLocalized(item.option, 'color_name') : '';
-            const shadeName = item.option.shade ? getLocalized(item.option, 'shade') : '';
+            // Always use Arabic name if available, fallback to English
+            const prodName = item.product.arabic || item.product.name;
+            const colorName = item.option.color_name || '';
+            const shadeName = item.option.shade || '';
+            const sizeName = item.option.size || '';
 
-            const optionDetails = [
-                colorName ? `${t('color')}: ${colorName}` : '',
-                shadeName ? `${t('shade')}: ${shadeName}` : '',
-                sizeName ? `${t('size')}: ${sizeName}` : ''
-            ].filter(Boolean).join(' | ');
+            const optionParts: string[] = [];
+            if (colorName) optionParts.push(`اللون: ${colorName}`);
+            if (shadeName) optionParts.push(`درجة اللون: ${shadeName}`);
+            if (sizeName) optionParts.push(`الحجم: ${sizeName}`);
+            const optionDetails = optionParts.join(' | ');
 
             message += `${index + 1}. *${prodName}*\n`;
             if (item.product.sku) {
@@ -329,20 +327,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (optionDetails) {
                 message += `   (${optionDetails})\n`;
             }
-            message += `   ${t('size') === 'الحجم' ? 'الكمية' : 'Qty'}: ${item.quantity}\n`;
-            message += `   ${t('price')}: ₪${item.option.price} × ${item.quantity} = ₪${item.option.price * item.quantity}\n\n`;
+            message += `   الكمية: ${item.quantity}\n`;
+            message += `   السعر: ₪${item.option.price} × ${item.quantity} = ₪${(item.option.price * item.quantity).toFixed(2)}\n\n`;
         });
 
         if (discount > 0) {
-            message += `*${t('subtotal')}: ₪${subtotal}*\n`;
-            message += `*${t('discount')}: ₪${discount.toFixed(2)}${coupon ? ` (${coupon.code})` : ''}*\n`;
+            message += `*المجموع الفرعي: ₪${subtotal.toFixed(2)}*\n`;
+            message += `*الخصم: ₪${discount.toFixed(2)}${coupon ? ` (${coupon.code})` : ''}*\n`;
         }
 
-        message += `*${t('total')}: ₪${total.toFixed(2)}*\n\n`;
-        message += `${t('whatsAppContactUs')} ✨`;
+        message += `*الإجمالي النهائي: ₪${total.toFixed(2)}*\n\n`;
+        message += `أرجو التواصل لإتمام الطلب 🙏✨`;
 
         // WhatsApp phone number
-        const adminWhatsAppNumber = '972593957882'; // Preset channel
+        const adminWhatsAppNumber = '972593957882';
         const encodedText = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${adminWhatsAppNumber}?text=${encodedText}`;
 

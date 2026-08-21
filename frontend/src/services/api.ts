@@ -76,9 +76,19 @@ export const api = {
     },
 
     products: {
-        listPublic: (page = 1, limit = 20) => request(`/products?page=${page}&limit=${limit}`),
+        listPublic: (page = 1, limit = 20, search?: string, category?: string, brand?: string) => {
+            const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+            if (search) params.set('search', search);
+            if (category) params.set('category', category);
+            if (brand) params.set('brand', brand);
+            return request(`/products?${params.toString()}`);
+        },
         getPublic: (id: string) => request(`/products/${id}`),
-        listAdmin: (page = 1, limit = 20) => request(`/admin/products?page=${page}&limit=${limit}`),
+        listAdmin: (page = 1, limit = 20, search?: string) => {
+            const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+            if (search) params.set('search', search);
+            return request(`/admin/products?${params.toString()}`);
+        },
         getAdmin: (id: string) => request(`/admin/products/${id}`),
         create: (body: any) => request('/admin/products', { method: 'POST', body }),
         update: (id: string, body: any) => request(`/admin/products/${id}`, { method: 'PUT', body }),

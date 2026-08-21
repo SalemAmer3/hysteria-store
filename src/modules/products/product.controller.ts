@@ -23,9 +23,26 @@ export class ProductController {
     static async listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page, limit, skip } = getPaginationQuery(req);
+            const search = req.query.search ? String(req.query.search) : undefined;
+            const categoryId = req.query.category ? String(req.query.category) : undefined;
+            const brandId = req.query.brand ? String(req.query.brand) : undefined;
+
+            const where: any = {};
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { arabic: { contains: search, mode: 'insensitive' } },
+                    { hebrew: { contains: search, mode: 'insensitive' } },
+                    { sku: { contains: search, mode: 'insensitive' } },
+                    { description: { contains: search, mode: 'insensitive' } },
+                ];
+            }
+            if (categoryId) where.category_id = categoryId;
+            if (brandId) where.brand_id = brandId;
+
             const [products, total] = await Promise.all([
                 prisma.product.findMany({
-                    skip, take: limit,
+                    where, skip, take: limit,
                     include: {
                         category: { select: { id: true, name: true, is_active: true } },
                         brand: { select: { id: true, name: true } },
@@ -34,7 +51,7 @@ export class ProductController {
                     },
                     orderBy: { created_at: 'desc' },
                 }),
-                prisma.product.count(),
+                prisma.product.count({ where }),
             ]);
             res.status(200).json(buildPaginatedResponse(products, total, page, limit));
         } catch (error) { next(error); }
@@ -60,9 +77,20 @@ export class ProductController {
     static async listAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page, limit, skip } = getPaginationQuery(req);
+            const search = req.query.search ? String(req.query.search) : undefined;
+
+            const where: any = {};
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { arabic: { contains: search, mode: 'insensitive' } },
+                    { sku: { contains: search, mode: 'insensitive' } },
+                ];
+            }
+
             const [products, total] = await Promise.all([
                 prisma.product.findMany({
-                    skip, take: limit,
+                    where, skip, take: limit,
                     include: {
                         category: { select: { id: true, name: true } },
                         brand: { select: { id: true, name: true } },
@@ -71,7 +99,7 @@ export class ProductController {
                     },
                     orderBy: { created_at: 'desc' },
                 }),
-                prisma.product.count(),
+                prisma.product.count({ where }),
             ]);
             res.status(200).json(buildPaginatedResponse(products, total, page, limit));
         } catch (error) { next(error); }

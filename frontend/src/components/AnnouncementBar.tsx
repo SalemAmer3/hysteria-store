@@ -27,16 +27,23 @@ export const AnnouncementBar: React.FC = () => {
 
     if (messages.length === 0) return null;
 
-    const combined = [...messages, ...messages].join('   ✦   ');
+    // Join messages with separator
+    const singlePass = messages.join('   ✦   ') + '   ✦   ';
 
     return (
         <div className="w-full bg-black text-white text-xs md:text-sm py-2 border-b border-zinc-900 overflow-hidden relative">
+            {/* Track contains text duplicated twice — seamless loop via translateX(-50%) */}
             <div
-                className="animate-marquee"
+                className="animate-marquee-track"
                 style={{ textShadow: '0 0 10px rgba(212, 175, 55, 0.4)' }}
             >
-                <span className="font-medium tracking-wide text-zinc-200">
-                    {combined}
+                {/* First copy */}
+                <span className="font-medium tracking-wide text-zinc-200 px-4">
+                    {singlePass}
+                </span>
+                {/* Exact duplicate — creates the seamless loop */}
+                <span className="font-medium tracking-wide text-zinc-200 px-4" aria-hidden="true">
+                    {singlePass}
                 </span>
             </div>
         </div>
