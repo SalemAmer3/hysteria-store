@@ -34,9 +34,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('histeria_admin_username');
     };
 
-    // Optional: check JWT token expiry or validate on bootstrap
+    // Check JWT token expiry on mount and whenever token changes
     useEffect(() => {
-        // If token exists, we can do some simple verification
+        if (!token) return;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.exp && payload.exp * 1000 < Date.now()) {
+                // Token is expired — clear session silently
+                logout();
+            }
+        } catch {
+            // Malformed token — clear it
+            logout();
+        }
     }, [token]);
 
     return (

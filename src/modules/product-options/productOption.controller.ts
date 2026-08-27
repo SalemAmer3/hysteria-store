@@ -15,6 +15,7 @@ const productOptionSchema = z.object({
     image_url: z.string().url().nullable().optional(),
     arabic: z.string().nullable().optional(),
     hebrew: z.string().nullable().optional(),
+    is_available: z.boolean().default(true),
 });
 
 const updateProductOptionSchema = productOptionSchema.partial();
@@ -80,6 +81,7 @@ export class ProductOptionController {
                     image_url: body.image_url ?? null,
                     arabic: body.arabic ?? null,
                     hebrew: body.hebrew ?? null,
+                    is_available: body.is_available ?? true,
                 },
             });
             res.status(201).json({ success: true, data: option });
@@ -115,6 +117,7 @@ export class ProductOptionController {
                     image_url: body.image_url !== undefined ? body.image_url : option.image_url,
                     arabic: body.arabic !== undefined ? body.arabic : option.arabic,
                     hebrew: body.hebrew !== undefined ? body.hebrew : option.hebrew,
+                    is_available: body.is_available !== undefined ? body.is_available : (option as any).is_available,
                 },
             });
 

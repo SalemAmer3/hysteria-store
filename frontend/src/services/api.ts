@@ -68,7 +68,11 @@ export const api = {
     categories: {
         listPublic: () => request('/categories?limit=100'),
         getPublic: (id: string) => request(`/categories/${id}`),
-        listAdmin: (page = 1, limit = 20) => request(`/admin/categories?page=${page}&limit=${limit}`),
+        listAdmin: (page = 1, limit = 20, search?: string) => {
+            const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+            if (search) params.set('search', search);
+            return request(`/admin/categories?${params.toString()}`);
+        },
         getAdmin: (id: string) => request(`/admin/categories/${id}`),
         create: (body: any) => request('/admin/categories', { method: 'POST', body }),
         update: (id: string, body: any) => request(`/admin/categories/${id}`, { method: 'PUT', body }),

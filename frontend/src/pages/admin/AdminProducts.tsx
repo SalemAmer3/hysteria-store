@@ -15,6 +15,7 @@ interface ProductOption {
     image_url?: string;
     arabic?: string;
     hebrew?: string;
+    is_available?: boolean;
 }
 
 interface ProductImage {
@@ -43,7 +44,7 @@ const emptyForm: ProductFormState = {
 };
 
 const emptyOption: ProductOption = {
-    size: '', color_name: '', shade: '', color: '', price: 0, image_url: '', arabic: '', hebrew: ''
+    size: '', color_name: '', shade: '', color: '', price: 0, image_url: '', arabic: '', hebrew: '', is_available: true
 };
 
 // ── Color group structure for UI ──────────────────────────────────
@@ -54,6 +55,8 @@ interface ShadeEntry {
     size: string;
     image_url: string;
     arabic: string;
+    hebrew: string;
+    is_available: boolean;
 }
 
 interface ColorGroup {
@@ -62,7 +65,7 @@ interface ColorGroup {
     shades: ShadeEntry[];
 }
 
-const emptyShade = (): ShadeEntry => ({ shade: '', price: 0, size: '', image_url: '', arabic: '' });
+const emptyShade = (): ShadeEntry => ({ shade: '', price: 0, size: '', image_url: '', arabic: '', hebrew: '', is_available: true });
 
 export const AdminProducts: React.FC = () => {
     const { t, direction } = useLanguage();
@@ -195,6 +198,8 @@ export const AdminProducts: React.FC = () => {
                     size: o.size || '',
                     image_url: o.image_url || '',
                     arabic: o.arabic || '',
+                    hebrew: o.hebrew || '',
+                    is_available: o.is_available !== false,
                 });
             });
             setColorGroups(Object.values(groupMap));
@@ -212,6 +217,7 @@ export const AdminProducts: React.FC = () => {
                 options: plainOptions.map((o: any) => ({
                     id: o.id, size: o.size || '', color_name: '', shade: '', color: '',
                     price: Number(o.price), image_url: o.image_url || '', arabic: o.arabic || '', hebrew: o.hebrew || '',
+                    is_available: o.is_available !== false,
                 })),
                 images: (p.images || []).map((img: any) => ({ id: img.id, image_url: img.image_url })),
             });
@@ -262,7 +268,8 @@ export const AdminProducts: React.FC = () => {
                     price: shade.price,
                     image_url: shade.image_url || null,
                     arabic: shade.arabic || null,
-                    hebrew: undefined,
+                    hebrew: shade.hebrew || null,
+                    is_available: shade.is_available,
                 } as ProductOption))
             );
             const allOptions = [...colorOptions, ...form.options];
@@ -302,6 +309,7 @@ export const AdminProducts: React.FC = () => {
                         shade: opt.shade || null, color: opt.color || null,
                         price: opt.price, image_url: opt.image_url || null,
                         arabic: opt.arabic || null, hebrew: opt.hebrew || null,
+                        is_available: opt.is_available !== false,
                     };
                     if (opt.id) {
                         await api.productOptions.update(opt.id, payload);
@@ -332,6 +340,7 @@ export const AdminProducts: React.FC = () => {
                         shade: opt.shade || null, color: opt.color || null,
                         price: opt.price, image_url: opt.image_url || null,
                         arabic: opt.arabic || null, hebrew: opt.hebrew || null,
+                        is_available: opt.is_available !== false,
                     });
                 }
             }
@@ -658,6 +667,22 @@ export const AdminProducts: React.FC = () => {
                                                                     <div className="col-span-2">
                                                                         <ImageUpload label="صورة الدرجة (اختياري)" value={shade.image_url || ''} onChange={url => updateShade(gi, si, 'image_url', url)} />
                                                                     </div>
+                                                                    {/* Availability toggle */}
+                                                                    <div className="col-span-2 flex items-center justify-between px-1">
+                                                                        <span className="text-[11px] font-bold text-zinc-400">حالة التوفر</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => updateShade(gi, si, 'is_available', !shade.is_available)}
+                                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-extrabold transition-all cursor-pointer ${
+                                                                                shade.is_available
+                                                                                    ? 'bg-emerald-400/10 border-emerald-400/30 text-emerald-400'
+                                                                                    : 'bg-rose-400/10 border-rose-400/30 text-rose-400'
+                                                                            }`}
+                                                                        >
+                                                                            <span className={`w-2 h-2 rounded-full ${shade.is_available ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                                                                            {shade.is_available ? 'متوفر' : 'غير متوفر'}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -714,6 +739,22 @@ export const AdminProducts: React.FC = () => {
                                                             </FormField>
                                                             <div className="col-span-2">
                                                                 <ImageUpload label="صورة الخيار" value={opt.image_url || ''} onChange={url => handleOptionChange(i, 'image_url', url)} />
+                                                            </div>
+                                                            {/* Availability toggle */}
+                                                            <div className="col-span-2 flex items-center justify-between px-1">
+                                                                <span className="text-[11px] font-bold text-zinc-400">حالة التوفر</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleOptionChange(i, 'is_available', !opt.is_available)}
+                                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-extrabold transition-all cursor-pointer ${
+                                                                        opt.is_available !== false
+                                                                            ? 'bg-emerald-400/10 border-emerald-400/30 text-emerald-400'
+                                                                            : 'bg-rose-400/10 border-rose-400/30 text-rose-400'
+                                                                    }`}
+                                                                >
+                                                                    <span className={`w-2 h-2 rounded-full ${opt.is_available !== false ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                                                                    {opt.is_available !== false ? 'متوفر' : 'غير متوفر'}
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     )}

@@ -52,18 +52,19 @@ model Product {
 }
 
 model ProductOption {
-  id         String   @id @default(uuid()) @db.Uuid
-  product_id String   @db.Uuid
-  color_name String?
-  shade      String?
-  size       String?
-  price      Decimal  @db.Decimal(10, 2)
-  color      String?
-  image_url  String?
-  arabic     String?
-  hebrew     String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id           String   @id @default(uuid()) @db.Uuid
+  product_id   String   @db.Uuid
+  color_name   String?
+  shade        String?
+  size         String?
+  price        Decimal  @db.Decimal(10, 2)
+  color        String?
+  image_url    String?
+  arabic       String?
+  hebrew       String?
+  is_available Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 

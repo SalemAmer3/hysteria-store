@@ -26,8 +26,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
             setError('Please upload a valid image file (PNG, JPG, WEBP…)');
             return;
         }
-        if (file.size > 8 * 1024 * 1024) {
-            setError('File size exceeds 8MB limit');
+        if (file.size > 20 * 1024 * 1024) {
+            setError('File size exceeds 20MB limit');
             return;
         }
         setUploading(true);
@@ -193,7 +193,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label
                                     : 'Click here then Ctrl+V / Cmd+V to paste'}
                             </span>
                         </p>
-                        <p className="text-[10px] text-zinc-700">PNG, JPG, WEBP, GIF · Max 8MB</p>
+                        <p className="text-[10px] text-zinc-700">PNG, JPG, WEBP, GIF · Max 20MB</p>
                     </div>
                 </div>
 

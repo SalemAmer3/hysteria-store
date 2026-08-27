@@ -28,15 +28,18 @@ export const AdminCategories: React.FC = () => {
         setLoading(true);
         try {
             const [res, allRes] = await Promise.all([
-                api.categories.listAdmin(page, 20),
-                api.categories.listPublic(),
+                api.categories.listAdmin(page, 20, search),
+                api.categories.listAdmin(1, 200),
             ]);
             setCategories(res.data);
             setTotalPages(res.pagination?.totalPages || 1);
             setAllCategories(allRes.data);
         } catch (err: any) { setError(err.message); }
         finally { setLoading(false); }
-    }, [page]);
+    }, [page, search]);
+
+    // Reset to page 1 when search changes
+    useEffect(() => { setPage(1); }, [search]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
@@ -108,7 +111,7 @@ export const AdminCategories: React.FC = () => {
                 <div className="space-y-2">
                     {loading
                         ? Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 bg-zinc-950 border border-zinc-900 rounded-xl shimmer" />)
-                        : categories.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()) || c.arabic?.includes(search)).map(cat => (
+                        : categories.map(cat => (
                             <div key={cat.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
                                     {cat.image_url

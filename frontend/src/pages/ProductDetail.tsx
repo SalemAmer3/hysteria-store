@@ -511,21 +511,30 @@ export const ProductDetail: React.FC = () => {
 
                     {/* Action buttons */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-900/80 pt-6">
-                        <button
-                            onClick={handleAddToCart}
-                            disabled={!selectedOption}
-                            className="w-full flex items-center justify-center gap-2.5 py-4 px-6 border-2 border-zinc-850 hover:border-gold-400 rounded-2xl bg-zinc-900 hover:bg-zinc-900/20 text-zinc-200 hover:text-white font-extrabold text-sm transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer tracking-wider"
-                        >
-                            <ShoppingBag size={18} />
-                            <span>{t('addToCart')}</span>
-                        </button>
-                        <button
-                            onClick={handleBuyNow}
-                            disabled={!selectedOption}
-                            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-gold-400 hover:bg-gold-500 text-black font-extrabold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer tracking-wider shadow-lg shadow-gold-500/10"
-                        >
-                            <span>{t('buyNow')}</span>
-                        </button>
+                        {selectedOption && selectedOption.is_available === false ? (
+                            <div className="sm:col-span-2 flex items-center justify-center py-4 px-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 text-zinc-500 font-extrabold text-sm tracking-wider gap-2">
+                                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+                                {direction === 'rtl' ? 'غير متوفر حالياً' : 'Currently Unavailable'}
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={handleAddToCart}
+                                    disabled={!selectedOption}
+                                    className="w-full flex items-center justify-center gap-2.5 py-4 px-6 border-2 border-zinc-850 hover:border-gold-400 rounded-2xl bg-zinc-900 hover:bg-zinc-900/20 text-zinc-200 hover:text-white font-extrabold text-sm transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer tracking-wider"
+                                >
+                                    <ShoppingBag size={18} />
+                                    <span>{t('addToCart')}</span>
+                                </button>
+                                <button
+                                    onClick={handleBuyNow}
+                                    disabled={!selectedOption}
+                                    className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-gold-400 hover:bg-gold-500 text-black font-extrabold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer tracking-wider shadow-lg shadow-gold-500/10"
+                                >
+                                    <span>{t('buyNow')}</span>
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     {/* Trust markers */}

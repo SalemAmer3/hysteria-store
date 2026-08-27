@@ -60,9 +60,20 @@ export class CategoryController {
     static async listAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page, limit, skip } = getPaginationQuery(req);
+            const search = req.query.search ? String(req.query.search) : undefined;
+
+            const where: any = {};
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { arabic: { contains: search, mode: 'insensitive' } },
+                    { hebrew: { contains: search, mode: 'insensitive' } },
+                ];
+            }
+
             const [categories, total] = await Promise.all([
-                prisma.category.findMany({ skip, take: limit, orderBy: { order: 'asc' }, include: { parent: true } }),
-                prisma.category.count(),
+                prisma.category.findMany({ where, skip, take: limit, orderBy: { order: 'asc' }, include: { parent: true } }),
+                prisma.category.count({ where }),
             ]);
             res.status(200).json(buildPaginatedResponse(categories, total, page, limit));
         } catch (error) { next(error); }
@@ -151,6 +162,18 @@ export class CategoryController {
             const id = String(req.params.id);
             const category = await prisma.category.findUnique({ where: { id } });
             if (!category) throw new CustomError(404, 'Category not found');
+
+            // Check if any products are using this category
+            const productCount = await prisma.product.count({ where: { category_id: id } });
+            if (productCount > 0) {
+                throw new CustomError(400, `Cannot delete category: ${productCount} product(s) are still assigned to it. Reassign or delete them first.`);
+            }
+
+            // Check if any sub-categories exist
+            const childCount = await prisma.category.count({ where: { parent_id: id } });
+            if (childCount > 0) {
+                throw new CustomError(400, `Cannot delete category: it has ${childCount} sub-categor${childCount === 1 ? 'y' : 'ies'}. Delete or reassign them first.`);
+            }
 
             await prisma.category.delete({ where: { id } });
 
