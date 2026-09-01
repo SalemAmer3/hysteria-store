@@ -1,14 +1,55 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AdminLayout } from '../../components/AdminLayout';
 import { ImageUpload } from '../../components/ImageUpload';
 import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../services/api';
-import { Plus, Pencil, Trash2, X, FolderOpen, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, FolderOpen, Search, ChevronRight } from 'lucide-react';
 
 const emptyForm = {
     name: '', description: '', parent_id: '', image_url: '', order: 0,
     arabic: '', hebrew: '', is_active: true,
 };
+
+/** Build a flat list with depth info for the parent selector dropdown */
+function buildFlatTree(
+    categories: any[],
+    parentId: string | null = null,
+    depth = 0,
+    excludeId?: string,
+): { cat: any; depth: number }[] {
+    const children = categories.filter(c => (c.parent_id ?? null) === parentId);
+    const result: { cat: any; depth: number }[] = [];
+    for (const cat of children) {
+        if (cat.id === excludeId) continue;
+        result.push({ cat, depth });
+        result.push(...buildFlatTree(categories, cat.id, depth + 1, excludeId));
+    }
+    return result;
+}
+
+/** Get the full breadcrumb path of a category */
+function getCategoryPath(catId: string, allCats: any[]): string {
+    const map = Object.fromEntries(allCats.map(c => [c.id, c]));
+    const parts: string[] = [];
+    let current = map[catId];
+    while (current) {
+        parts.unshift(current.name);
+        current = current.parent_id ? map[current.parent_id] : null;
+    }
+    return parts.join(' › ');
+}
+
+/** Get depth level of a category */
+function getCategoryDepth(catId: string, allCats: any[]): number {
+    const map = Object.fromEntries(allCats.map(c => [c.id, c]));
+    let depth = 0;
+    let current = map[catId];
+    while (current?.parent_id) {
+        depth++;
+        current = map[current.parent_id];
+    }
+    return depth;
+}
 
 export const AdminCategories: React.FC = () => {
     const { t, direction } = useLanguage();
@@ -27,9 +68,10 @@ export const AdminCategories: React.FC = () => {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
+            // Load all categories (up to 1000) so we can build the full tree
             const [res, allRes] = await Promise.all([
                 api.categories.listAdmin(page, 20, search),
-                api.categories.listAdmin(1, 200),
+                api.categories.listAdmin(1, 1000),
             ]);
             setCategories(res.data);
             setTotalPages(res.pagination?.totalPages || 1);
@@ -42,6 +84,12 @@ export const AdminCategories: React.FC = () => {
     useEffect(() => { setPage(1); }, [search]);
 
     useEffect(() => { loadData(); }, [loadData]);
+
+    // Flat tree for parent dropdown (excluding the item being edited to prevent self/circular)
+    const parentOptions = useMemo(
+        () => buildFlatTree(allCategories, null, 0, editItem?.id ?? undefined),
+        [allCategories, editItem],
+    );
 
     const openCreate = () => { setEditItem(null); setForm({ ...emptyForm }); setError(null); setShowForm(true); };
     const openEdit = (item: any) => {
@@ -111,29 +159,49 @@ export const AdminCategories: React.FC = () => {
                 <div className="space-y-2">
                     {loading
                         ? Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 bg-zinc-950 border border-zinc-900 rounded-xl shimmer" />)
-                        : categories.map(cat => (
-                            <div key={cat.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
-                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
-                                    {cat.image_url
-                                        ? <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
-                                        : <FolderOpen size={18} className="text-zinc-700 m-auto mt-3" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-zinc-200 font-semibold text-sm truncate">{cat.name}</p>
-                                    <div className="flex flex-wrap gap-2 mt-1">
-                                        {cat.parent_id && <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">Sub-category</span>}
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${cat.is_active ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' : 'text-zinc-600 bg-zinc-900 border-zinc-800'}`}>
-                                            {cat.is_active ? t('active') : t('inactive')}
-                                        </span>
-                                        <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">Order: {cat.order}</span>
+                        : categories.map(cat => {
+                            const depth = getCategoryDepth(cat.id, allCategories);
+                            const breadcrumb = cat.parent_id ? getCategoryPath(cat.parent_id, allCategories) : null;
+                            return (
+                                <div key={cat.id} className="bg-[#0d0d11]/50 border border-zinc-900 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-800 transition-colors">
+                                    {/* Depth indent indicator */}
+                                    {depth > 0 && (
+                                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                                            {Array.from({ length: depth }).map((_, i) => (
+                                                <div key={i} className="w-3 h-full border-l border-zinc-800 opacity-50" />
+                                            ))}
+                                            <ChevronRight size={12} className="text-zinc-600" />
+                                        </div>
+                                    )}
+                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800">
+                                        {cat.image_url
+                                            ? <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
+                                            : <FolderOpen size={18} className="text-zinc-700 m-auto mt-3" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-zinc-200 font-semibold text-sm truncate">{cat.name}</p>
+                                        {breadcrumb && (
+                                            <p className="text-[10px] text-zinc-600 truncate mt-0.5">{breadcrumb}</p>
+                                        )}
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {depth > 0 && (
+                                                <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">
+                                                    {direction === 'rtl' ? `مستوى ${depth}` : `Level ${depth}`}
+                                                </span>
+                                            )}
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${cat.is_active ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' : 'text-zinc-600 bg-zinc-900 border-zinc-800'}`}>
+                                                {cat.is_active ? t('active') : t('inactive')}
+                                            </span>
+                                            <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">Order: {cat.order}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => openEdit(cat)} className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-blue-400 border border-zinc-800 cursor-pointer"><Pencil size={15} /></button>
+                                        <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-rose-400 border border-zinc-800 cursor-pointer"><Trash2 size={15} /></button>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button onClick={() => openEdit(cat)} className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-blue-400 border border-zinc-800 cursor-pointer"><Pencil size={15} /></button>
-                                    <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-rose-400 border border-zinc-800 cursor-pointer"><Trash2 size={15} /></button>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     }
                 </div>
 
@@ -161,8 +229,12 @@ export const AdminCategories: React.FC = () => {
                                 <AdminField label={t('descriptionItem')}><textarea rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="admin-input resize-none" /></AdminField>
                                 <AdminField label={t('parentCategory')}>
                                     <select value={form.parent_id} onChange={e => setForm(f => ({ ...f, parent_id: e.target.value }))} className="admin-input">
-                                        <option value="">— None (Top Level) —</option>
-                                        {allCategories.filter(c => c.id !== editItem?.id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        <option value="">— {direction === 'rtl' ? 'بدون قسم رئيسي (أعلى مستوى)' : 'None (Top Level)'} —</option>
+                                        {parentOptions.map(({ cat, depth }) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {'\u00A0\u00A0'.repeat(depth * 2)}{depth > 0 ? '↳ ' : ''}{cat.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </AdminField>
                                 <div className="grid grid-cols-2 gap-3">
