@@ -1,13 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { Slider } from '../components/Slider';
 import { ProductCard } from '../components/ProductCard';
-import { ArrowRight, ArrowLeft, ArrowUpRight, ChevronDown } from 'lucide-react';
+import { CategoryTree } from '../components/CategoryTree';
+import { ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
+
+/** Returns true if cat is a descendant (at any depth) of ancestorId */
+function isDescendantOf(
+    cat: { parent_id?: string | null },
+    ancestorId: string,
+    allCats: { id: string; parent_id?: string | null }[],
+): boolean {
+    const map = Object.fromEntries(allCats.map(c => [c.id, c]));
+    let current: { parent_id?: string | null } | undefined = cat;
+    while (current?.parent_id) {
+        if (current.parent_id === ancestorId) return true;
+        current = map[current.parent_id];
+    }
+    return false;
+}
 
 export const Home: React.FC = () => {
     const { direction, t, getLocalized } = useLanguage();
+    const navigate = useNavigate();
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
@@ -93,96 +110,21 @@ export const Home: React.FC = () => {
                     </div>
                 ) : (
                     <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {categories.filter(c => !c.parent_id).map((cat) => {
-                            const children = categories.filter(c => c.parent_id === cat.id);
-                            const hasChildren = children.length > 0;
-                            const isExpanded = !!expandedCats[cat.id];
-
-                            return (
-                                <div key={cat.id} className="flex flex-col">
-                                    {/* Parent row */}
-                                    <div className={`flex items-center justify-between rounded-xl border transition-all duration-200 overflow-hidden ${isExpanded ? 'border-gold-400/40 bg-zinc-900' : 'border-zinc-800 bg-zinc-950/60 hover:border-zinc-700'}`}>
-                                        <Link
-                                            to={`/products?category=${cat.id}`}
-                                            className="flex items-center gap-3 flex-1 px-4 py-3.5 group"
-                                        >
-                                            {cat.image_url && (
-                                                <img src={cat.image_url} alt="" className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
-                                            )}
-                                            <span className={`text-sm font-bold transition-colors ${isExpanded ? 'text-gold-400' : 'text-zinc-300 group-hover:text-gold-400'}`}>
-                                                {getLocalized(cat, 'name')}
-                                            </span>
-                                        </Link>
-                                        {hasChildren && (
-                                            <button
-                                                onClick={() => setExpandedCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
-                                                className="px-3 py-3.5 text-zinc-500 hover:text-gold-400 transition-colors cursor-pointer flex-shrink-0"
-                                            >
-                                                <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-gold-400' : ''}`} />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Children level 2 - slide down */}
-                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
-                                        <div className={`flex flex-col gap-0.5 ${direction === 'rtl' ? 'mr-3 pr-3 border-r-2 border-gold-400/20' : 'ml-3 pl-3 border-l-2 border-gold-400/20'}`}>
-                                            {children.map((child) => {
-                                                const grandChildren = categories.filter(c => c.parent_id === child.id);
-                                                const hasGrandChildren = grandChildren.length > 0;
-                                                const isChildExpanded = !!expandedCats[child.id];
-
-                                                return (
-                                                    <div key={child.id} className="flex flex-col">
-                                                        {/* Level 2 row */}
-                                                        <div className="flex items-center justify-between group rounded-lg hover:bg-zinc-900 transition-all">
-                                                            <Link
-                                                                to={`/products?category=${child.id}`}
-                                                                className="flex items-center gap-2.5 flex-1 px-3 py-2 text-xs font-semibold text-zinc-500 hover:text-zinc-200 transition-all"
-                                                            >
-                                                                {child.image_url && (
-                                                                    <img src={child.image_url} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-70 group-hover:opacity-100" />
-                                                                )}
-                                                                <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                                                <span>{getLocalized(child, 'name')}</span>
-                                                            </Link>
-                                                            {hasGrandChildren && (
-                                                                <button
-                                                                    onClick={() => setExpandedCats(prev => ({ ...prev, [child.id]: !prev[child.id] }))}
-                                                                    className="px-2 py-2 text-zinc-600 hover:text-gold-400 transition-colors cursor-pointer flex-shrink-0"
-                                                                >
-                                                                    <ChevronDown size={12} className={`transition-transform duration-300 ${isChildExpanded ? 'rotate-180 text-gold-400' : ''}`} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Level 3 grandchildren */}
-                                                        {hasGrandChildren && (
-                                                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isChildExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                                                <div className={`flex flex-col gap-0.5 ${direction === 'rtl' ? 'mr-3 pr-2 border-r border-zinc-800' : 'ml-3 pl-2 border-l border-zinc-800'}`}>
-                                                                    {grandChildren.map((gc) => (
-                                                                        <Link
-                                                                            key={gc.id}
-                                                                            to={`/products?category=${gc.id}`}
-                                                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-600 hover:text-zinc-300 hover:bg-zinc-900/60 transition-all"
-                                                                        >
-                                                                            {gc.image_url && (
-                                                                                <img src={gc.image_url} alt="" className="w-4 h-4 rounded object-cover flex-shrink-0 opacity-60" />
-                                                                            )}
-                                                                            <span className="text-zinc-700 text-[9px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                                                            <span>{getLocalized(gc, 'name')}</span>
-                                                                        </Link>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {categories.filter(c => !c.parent_id).map((cat) => (
+                            <CategoryTree
+                                key={cat.id}
+                                categories={categories.filter(c =>
+                                    c.id === cat.id || isDescendantOf(c, cat.id, categories)
+                                )}
+                                activeCategoryId={null}
+                                direction={direction}
+                                onSelect={(id) => navigate(`/products?category=${id}`)}
+                                expandedIds={expandedCats}
+                                onToggle={(id) => setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }))}
+                                getLocalized={getLocalized}
+                                variant="home"
+                            />
+                        ))}
                     </div>
                 )}
             </section>

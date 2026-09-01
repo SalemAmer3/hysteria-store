@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
-import { SlidersHorizontal, Trash2, ChevronDown } from 'lucide-react';
+import { CategoryTree, collectDescendantIds } from '../components/CategoryTree';
+import { SlidersHorizontal, Trash2 } from 'lucide-react';
 
 export const CategoryListing: React.FC = () => {
     const { getLocalized, direction, t } = useLanguage();
@@ -16,7 +17,6 @@ export const CategoryListing: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    // Track which parent categories are expanded in the accordion
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
 
     const activeCategoryId = searchParams.get('category');
@@ -34,13 +34,11 @@ export const CategoryListing: React.FC = () => {
                 setCategories(catsRes.data.filter((c: any) => c.is_active));
                 setBrands(brandsRes.data);
 
-                // Pass search and brand to backend for server-side filtering
-                // Category is still filtered client-side to support grandchild hierarchy
                 const productsRes = await api.products.listPublic(
                     currentPage,
-                    100, // load more to support client-side category hierarchy filtering
+                    100,
                     searchQuery || undefined,
-                    undefined, // category handled client-side
+                    undefined,
                     (activeBrandId && activeBrandId !== 'all') ? activeBrandId : undefined,
                 );
                 setProducts(productsRes.data);
@@ -60,35 +58,26 @@ export const CategoryListing: React.FC = () => {
         setCurrentPage(1);
     }, [activeCategoryId, activeBrandId, searchQuery]);
 
-    // Auto-expand parent if a child is active
+    // Auto-expand the full ancestor chain when a deep category is active
     useEffect(() => {
-        if (activeCategoryId && activeCategoryId !== 'all') {
-            const activeChild = categories.find(c => c.id === activeCategoryId && c.parent_id);
-            if (activeChild) {
-                setExpandedCats(prev => ({ ...prev, [activeChild.parent_id]: true }));
-            }
+        if (!activeCategoryId || activeCategoryId === 'all') return;
+        const map = Object.fromEntries(categories.map(c => [c.id, c]));
+        const toExpand: Record<string, boolean> = {};
+        let current = map[activeCategoryId];
+        while (current?.parent_id) {
+            toExpand[current.parent_id] = true;
+            current = map[current.parent_id];
+        }
+        if (Object.keys(toExpand).length > 0) {
+            setExpandedCats(prev => ({ ...prev, ...toExpand }));
         }
     }, [activeCategoryId, categories]);
 
+    // Include products from the selected category AND all its descendants at any depth
     const filteredProducts = products.filter((p) => {
-        if (activeCategoryId && activeCategoryId !== 'all') {
-            if (p.category_id !== activeCategoryId) {
-                const targetCategory = categories.find((c) => c.id === p.category_id);
-                if (!targetCategory) return false;
-                // Check parent match (level 2)
-                if (targetCategory.parent_id === activeCategoryId) {
-                    // ok - direct child
-                } else {
-                    // Check grandparent match (level 3)
-                    const grandparentCat = categories.find((c) => c.id === targetCategory.parent_id);
-                    if (!grandparentCat || grandparentCat.parent_id !== activeCategoryId) {
-                        return false;
-                    }
-                }
-            }
-        }
-        // brand and search are already filtered server-side
-        return true;
+        if (!activeCategoryId || activeCategoryId === 'all') return true;
+        const matchIds = collectDescendantIds(activeCategoryId, categories);
+        return matchIds.has(p.category_id);
     });
 
     const clearAllFilters = () => setSearchParams({});
@@ -113,18 +102,12 @@ export const CategoryListing: React.FC = () => {
         setSearchParams(params);
     };
 
-    const toggleExpand = (catId: string) => {
-        setExpandedCats(prev => ({ ...prev, [catId]: !prev[catId] }));
-    };
+    const toggleCat = (id: string) =>
+        setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }));
 
-    // Separate parent and child categories
-    const parentCategories = categories.filter(c => !c.parent_id);
-    const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
-
-    // Nested Accordion Category list — shared between desktop sidebar & mobile
-    const NestedCategoryList = () => (
-        <div className="flex flex-col gap-0.5">
-            {/* "All" button */}
+    // Shared "All categories" button + recursive tree — used in both desktop and mobile
+    const CategoryFilter = () => (
+        <>
             <button
                 onClick={() => handleCategoryClick('all')}
                 className={`w-full flex items-center gap-2.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
@@ -137,130 +120,17 @@ export const CategoryListing: React.FC = () => {
                 <span>🏠</span>
                 <span>{t('allCategories')}</span>
             </button>
-
-            {/* Parent categories with optional accordion for children */}
-            {parentCategories.map((parent) => {
-                const children = getChildren(parent.id);
-                const hasChildren = children.length > 0;
-                const isExpanded = !!expandedCats[parent.id];
-                const isParentActive = activeCategoryId === parent.id;
-                const isChildActive = children.some(c => {
-                    if (c.id === activeCategoryId) return true;
-                    return getChildren(c.id).some(gc => gc.id === activeCategoryId);
-                });
-                const isHighlighted = isParentActive || isChildActive;
-
-                return (
-                    <div key={parent.id}>
-                        {/* Parent row */}
-                        <div
-                            className={`w-full flex items-center justify-between py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                                isHighlighted
-                                    ? 'bg-gold-400/15 text-gold-400 border border-gold-400/30'
-                                    : 'text-zinc-300 hover:bg-zinc-900 hover:text-white border border-transparent'
-                            }`}
-                        >
-                            {/* Category name — clicking selects it */}
-                            <button
-                                onClick={() => handleCategoryClick(parent.id)}
-                                className="flex items-center gap-2 flex-1 cursor-pointer text-left"
-                                style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                            >
-                                <span className="text-sm">{parent.image_url ? <img src={parent.image_url} className="w-4 h-4 rounded object-cover" /> : '📂'}</span>
-                                <span className={isHighlighted ? 'font-extrabold' : ''}>{getLocalized(parent, 'name')}</span>
-                            </button>
-
-                            {/* Expand arrow — only if has children */}
-                            {hasChildren && (
-                                <button
-                                    onClick={() => toggleExpand(parent.id)}
-                                    className="p-1 rounded cursor-pointer flex-shrink-0 hover:text-gold-400 transition-colors"
-                                >
-                                    <ChevronDown
-                                        size={14}
-                                        className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Children — animated slide */}
-                        <div
-                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
-                            }`}
-                        >
-                            <div className={`flex flex-col gap-0.5 mt-0.5 ${direction === 'rtl' ? 'mr-4 pr-2 border-r border-zinc-800' : 'ml-4 pl-2 border-l border-zinc-800'}`}>
-                                {children.map((child) => {
-                                    const grandChildren = getChildren(child.id);
-                                    const hasGrandChildren = grandChildren.length > 0;
-                                    const isChildSelected = activeCategoryId === child.id;
-                                    const isGrandChildActive = grandChildren.some(gc => gc.id === activeCategoryId);
-                                    const isChildHighlighted = isChildSelected || isGrandChildActive;
-                                    const isChildExpanded = !!expandedCats[child.id];
-
-                                    return (
-                                        <div key={child.id}>
-                                            {/* Level 2 row */}
-                                            <div className={`flex items-center justify-between rounded-lg transition-all ${isChildHighlighted ? 'bg-gold-400/10' : ''}`}>
-                                                <button
-                                                    onClick={() => handleCategoryClick(child.id)}
-                                                    className={`flex items-center gap-2 flex-1 py-1.5 px-3 rounded-lg text-[11px] transition-all cursor-pointer ${
-                                                        isChildSelected
-                                                            ? 'bg-gold-400 text-black font-extrabold'
-                                                            : isChildHighlighted
-                                                                ? 'text-gold-400 font-bold'
-                                                                : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
-                                                    }`}
-                                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                                >
-                                                    <span className="text-zinc-600 text-[10px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                                    <span>{getLocalized(child, 'name')}</span>
-                                                </button>
-                                                {hasGrandChildren && (
-                                                    <button
-                                                        onClick={() => toggleExpand(child.id)}
-                                                        className="p-1 rounded cursor-pointer flex-shrink-0 hover:text-gold-400 transition-colors text-zinc-600"
-                                                    >
-                                                        <ChevronDown size={11} className={`transition-transform duration-300 ${isChildExpanded ? 'rotate-180' : ''}`} />
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Level 3 grandchildren */}
-                                            {hasGrandChildren && (
-                                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isChildExpanded ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                                    <div className={`flex flex-col gap-0.5 mt-0.5 ${direction === 'rtl' ? 'mr-4 pr-2 border-r border-zinc-800/50' : 'ml-4 pl-2 border-l border-zinc-800/50'}`}>
-                                                        {grandChildren.map((gc) => {
-                                                            const isGcSelected = activeCategoryId === gc.id;
-                                                            return (
-                                                                <button
-                                                                    key={gc.id}
-                                                                    onClick={() => handleCategoryClick(gc.id)}
-                                                                    className={`w-full flex items-center gap-2 py-1 px-3 rounded-lg text-[10px] transition-all cursor-pointer ${
-                                                                        isGcSelected
-                                                                            ? 'bg-gold-400 text-black font-extrabold'
-                                                                            : 'text-zinc-600 hover:bg-zinc-900 hover:text-zinc-300'
-                                                                    }`}
-                                                                    style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
-                                                                >
-                                                                    <span className="text-zinc-700 text-[9px]">{direction === 'rtl' ? '←' : '→'}</span>
-                                                                    <span>{getLocalized(gc, 'name')}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
+            <CategoryTree
+                categories={categories}
+                activeCategoryId={activeCategoryId}
+                direction={direction}
+                onSelect={handleCategoryClick}
+                expandedIds={expandedCats}
+                onToggle={toggleCat}
+                getLocalized={getLocalized}
+                variant="sidebar"
+            />
+        </>
     );
 
     return (
@@ -298,10 +168,9 @@ export const CategoryListing: React.FC = () => {
                         <span>Filters</span>
                     </div>
 
-                    {/* Nested Category Accordion */}
                     <div className="space-y-2">
                         <h4 className="text-zinc-400 font-bold text-xs uppercase tracking-wider">{t('filterByCategory')}</h4>
-                        <NestedCategoryList />
+                        <CategoryFilter />
                     </div>
 
                     {/* Brands */}
@@ -339,10 +208,9 @@ export const CategoryListing: React.FC = () => {
 
                 {/* ── Mobile Filters ── */}
                 <div className="md:hidden w-full flex flex-col gap-3 mb-4">
-                    {/* Category accordion — mobile horizontal doesn't work well for nested, use a compact vertical */}
                     <div className="bg-[#0d0d11]/40 border border-zinc-900 rounded-xl p-3 space-y-2">
                         <p className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-widest">{t('filterByCategory')}</p>
-                        <NestedCategoryList />
+                        <CategoryFilter />
                     </div>
 
                     {/* Brand pills */}
