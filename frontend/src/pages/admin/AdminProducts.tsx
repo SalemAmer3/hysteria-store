@@ -275,7 +275,10 @@ export const AdminProducts: React.FC = () => {
             const allOptions = [...colorOptions, ...form.options];
 
             if (editProduct) {
-                await api.products.update(editProduct.id, {
+                productId = editProduct.id;
+
+                // 1. Update product fields
+                await api.products.update(productId, {
                     name: form.name, description: form.description || null,
                     sku: form.sku || null,
                     category_id: form.category_id, brand_id: form.brand_id || null,
@@ -283,26 +286,39 @@ export const AdminProducts: React.FC = () => {
                     arabic_description: form.arabic_description || null,
                     hebrew_description: form.hebrew_description || null,
                 });
-                productId = editProduct.id;
 
-                // Sync images
-                const existingImageIds = (editProduct.images || []).map((img: any) => img.id);
-                const formImageIds = form.images.filter(img => img.id).map(img => img.id);
-                for (const imgId of existingImageIds) {
-                    if (!formImageIds.includes(imgId)) await api.productImages.delete(imgId);
+                // 2. Fetch the latest saved state from the server (avoids stale editProduct data)
+                const freshRes = await api.products.getAdmin(productId);
+                const freshProduct = freshRes.data;
+
+                // 3. Sync images — compare by id, only touch what changed
+                const serverImageIds = new Set((freshProduct.images || []).map((img: any) => img.id));
+                const formImageIds = new Set(form.images.filter(img => img.id).map(img => img.id));
+
+                // Delete images removed by user
+                for (const serverImg of (freshProduct.images || [])) {
+                    if (!formImageIds.has(serverImg.id)) {
+                        await api.productImages.delete(serverImg.id);
+                    }
                 }
+                // Create only genuinely new images (no id yet)
                 for (const img of form.images) {
                     if (!img.id && img.image_url) {
                         await api.productImages.create({ product_id: productId, image_url: img.image_url });
                     }
                 }
 
-                // Sync options: delete removed, update existing, create new
-                const existingOptIds = (editProduct.options || []).map((o: any) => o.id);
-                const formOptIds = allOptions.filter(o => o.id).map(o => o.id);
-                for (const optId of existingOptIds) {
-                    if (!formOptIds.includes(optId)) await api.productOptions.delete(optId);
+                // 4. Sync options — compare by id, only touch what changed
+                const serverOptIds = new Set((freshProduct.options || []).map((o: any) => o.id));
+                const formOptIds = new Set(allOptions.filter(o => o.id).map(o => o.id));
+
+                // Delete options removed by user
+                for (const serverOpt of (freshProduct.options || [])) {
+                    if (!formOptIds.has(serverOpt.id)) {
+                        await api.productOptions.delete(serverOpt.id);
+                    }
                 }
+                // Update existing / create new options
                 for (const opt of allOptions) {
                     const payload = {
                         size: opt.size || null, color_name: opt.color_name || null,
@@ -311,9 +327,9 @@ export const AdminProducts: React.FC = () => {
                         arabic: opt.arabic || null, hebrew: opt.hebrew || null,
                         is_available: opt.is_available !== false,
                     };
-                    if (opt.id) {
+                    if (opt.id && serverOptIds.has(opt.id)) {
                         await api.productOptions.update(opt.id, payload);
-                    } else {
+                    } else if (!opt.id) {
                         await api.productOptions.create({ product_id: productId, ...payload });
                     }
                 }
