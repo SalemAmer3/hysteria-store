@@ -292,7 +292,6 @@ export const AdminProducts: React.FC = () => {
                 const freshProduct = freshRes.data;
 
                 // 3. Sync images — compare by id, only touch what changed
-                const serverImageIds = new Set((freshProduct.images || []).map((img: any) => img.id));
                 const formImageIds = new Set(form.images.filter(img => img.id).map(img => img.id));
 
                 // Delete images removed by user
