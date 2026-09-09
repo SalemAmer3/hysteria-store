@@ -421,8 +421,9 @@ body.light .shimmer {
 .animate-marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee 18s linear infinite;
+  animation: marquee 28s linear infinite;
   white-space: nowrap;
+  will-change: transform;
 }
 .animate-marquee-track:hover {
   animation-play-state: paused;
@@ -449,4 +450,210 @@ body.light .shimmer {
 .admin-input option {
   background-color: #0d0d11;
   color: #e4e4e7;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LUXURY ANIMATIONS — Histeria Store
+   All transforms/opacity only → no layout reflow
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Keyframes ───────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Gold underline expands from centre */
+@keyframes gold-line-expand {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+/* Subtle shine sweep across a button */
+@keyframes shine-sweep {
+  0%   { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%)  skewX(-20deg); }
+}
+
+/* Heart pulse on wishlist click */
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+
+/* Page fade for route transitions */
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 2. Utility classes ─────────────────────────────────────── */
+
+/* Scroll-reveal base — applied by useScrollReveal hook */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Stagger helpers */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.45s; }
+
+/* Slider / hero entry */
+.animate-fade-in {
+  animation: fade-in-up 0.7s ease both;
+}
+.animate-zoom-in {
+  animation: zoom-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Gold divider animated */
+.gold-divider {
+  display: block;
+  height: 2px;
+  width: 3rem;           /* 48px — same as existing w-12 */
+  background: #d4af37;
+  margin-left: auto;
+  margin-right: auto;
+  transform-origin: center;
+  transform: scaleX(0);
+  opacity: 0;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   0.55s ease;
+}
+.gold-divider.is-visible {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Shine overlay on buttons — add .btn-shine to button */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255,255,255,0.18) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%) skewX(-20deg);
+  transition: none;
+}
+.btn-shine:hover::after {
+  animation: shine-sweep 0.55s ease forwards;
+}
+
+/* Heart pop animation class — toggled via JS */
+.heart-pop {
+  animation: heart-pop 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Page transition wrapper */
+.page-enter {
+  animation: page-fade-in 0.35s ease both;
+}
+
+/* Product card "View Product" overlay button */
+.card-view-btn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 100%);
+  color: #d4af37;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.group:hover .card-view-btn {
+  transform: translateY(0);
+}
+
+/* Card lift on hover — translateY on the card shell only, does NOT
+   interfere with scale on inner elements because transform stacking
+   is handled by the browser's compositing layer separately */
+.card-lift {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.45s ease;
+  will-change: transform, box-shadow;
+}
+.card-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.50), 0 0 0 1px rgba(212,175,55,0.13);
+}
+/* The img inside a card-lift gets its own compositing context so
+   group-hover:scale works independently of the parent translateY */
+.card-lift img {
+  will-change: transform;
+}
+
+/* ── 3. Respect prefers-reduced-motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Stop decorative animations but NOT the marquee (users expect it) */
+  *:not(.animate-marquee-track):not(.animate-marquee-track *),
+  *:not(.animate-marquee-track)::before,
+  *:not(.animate-marquee-track)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal,
+  .gold-divider {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── 4. Mobile — lighter transitions ────────────────────────── */
+@media (max-width: 767px) {
+  .reveal {
+    transform: translateY(12px);
+    transition-duration: 0.45s;
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+  }
+  .card-lift img {
+    will-change: transform;
+  }
 }

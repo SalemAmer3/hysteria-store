@@ -19,8 +19,8 @@ export const ProductDetail: React.FC = () => {
     const [activeImage, setActiveImage] = useState<string>('');
     const [selectedOption, setSelectedOption] = useState<any | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
-    const [selectedShade, setSelectedShade] = useState<string | null>(null);
-    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [, setSelectedShade] = useState<string | null>(null);
+    const [, setSelectedSize] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
@@ -116,66 +116,49 @@ export const ProductDetail: React.FC = () => {
     const categoryName = product.category?.name || '';
     const wishlistActive = isInWishlist(product.id);
 
-    // Options filtering & selector helpers
-    const options = product.options || [];
+    // ── Options logic ────────────────────────────────────────────────────────
+    const options: any[] = product.options || [];
 
+    // Each option is a unique selectable item — no deduplication by value.
+    // We only group by color_name for the colour selector row.
     const uniqueColors = Array.from(
-        new Set(options.map((o: any) => o.color_name).filter(Boolean))
-    ) as string[];
-
-    const availableShades = Array.from(
-        new Set(
+        new Map(
             options
-                .filter((o: any) => !selectedColor || o.color_name === selectedColor)
-                .map((o: any) => o.shade)
-                .filter(Boolean)
-        )
-    ) as string[];
+                .filter((o: any) => o.color_name)
+                .map((o: any) => [o.color_name, { color_name: o.color_name, color: o.color }])
+        ).values()
+    );
 
-    const availableSizes = Array.from(
-        new Set(
-            options
-                .filter((o: any) =>
-                    (!selectedColor || o.color_name === selectedColor) &&
-                    (!selectedShade || o.shade === selectedShade)
-                )
-                .map((o: any) => o.size)
-                .filter(Boolean)
-        )
-    ) as string[];
+    // Options visible under the currently selected color (or all if no colour)
+    const optionsForColor = selectedColor
+        ? options.filter((o: any) => o.color_name === selectedColor)
+        : options;
 
-    const handleSelectColor = (c: string) => {
-        setSelectedColor(c);
-        const shades = Array.from(new Set(options.filter((o: any) => o.color_name === c).map((o: any) => o.shade).filter(Boolean))) as string[];
-        const newShade = shades[0] || null;
-        setSelectedShade(newShade);
-
-        const sizes = Array.from(new Set(options.filter((o: any) => o.color_name === c && (!newShade || o.shade === newShade)).map((o: any) => o.size).filter(Boolean))) as string[];
-        const newSize = sizes[0] || null;
-        setSelectedSize(newSize);
-
-        const match = options.find((o: any) => o.color_name === c && (!newShade || o.shade === newShade) && (!newSize || o.size === newSize)) || options.find((o: any) => o.color_name === c);
-        if (match) setSelectedOption(match);
+    // Select a whole option directly (by id)
+    const handleSelectOption = (opt: any) => {
+        setSelectedOption(opt);
+        setSelectedColor(opt.color_name || null);
+        setSelectedShade(opt.shade || null);
+        setSelectedSize(opt.size || null);
+        if (opt.image_url) setActiveImage(opt.image_url);
     };
 
-    const handleSelectShade = (s: string) => {
-        setSelectedShade(s);
-        const sizes = Array.from(new Set(options.filter((o: any) => (!selectedColor || o.color_name === selectedColor) && o.shade === s).map((o: any) => o.size).filter(Boolean))) as string[];
-        const newSize = sizes[0] || null;
-        setSelectedSize(newSize);
-
-        const match = options.find((o: any) => (!selectedColor || o.color_name === selectedColor) && o.shade === s && (!newSize || o.size === newSize)) || options.find((o: any) => (!selectedColor || o.color_name === selectedColor) && o.shade === s);
-        if (match) setSelectedOption(match);
+    // When clicking a colour chip → pick the first option of that colour
+    const handleSelectColor = (colorName: string) => {
+        const first = options.find((o: any) => o.color_name === colorName);
+        if (first) handleSelectOption(first);
     };
 
-    const handleSelectSize = (sz: string) => {
-        setSelectedSize(sz);
-        const match = options.find((o: any) =>
-            (!selectedColor || o.color_name === selectedColor) &&
-            (!selectedShade || o.shade === selectedShade) &&
-            o.size === sz
-        );
-        if (match) setSelectedOption(match);
+    // When clicking a thumbnail → find matching option and select it
+    const handleThumbnailClick = (imgUrl: string) => {
+        setActiveImage(imgUrl);
+        const matchingOpt = options.find((o: any) => o.image_url === imgUrl);
+        if (matchingOpt) {
+            setSelectedOption(matchingOpt);
+            setSelectedColor(matchingOpt.color_name || null);
+            setSelectedShade(matchingOpt.shade || null);
+            setSelectedSize(matchingOpt.size || null);
+        }
     };
 
     const handleAddToCart = () => {
@@ -235,7 +218,7 @@ export const ProductDetail: React.FC = () => {
                             {allImages.map((imgUrl, i) => (
                                 <button
                                     key={i}
-                                    onClick={() => setActiveImage(imgUrl)}
+                                    onClick={() => handleThumbnailClick(imgUrl)}
                                     className={`aspect-square w-full rounded-xl overflow-hidden border-2 bg-zinc-950 transition-all cursor-pointer ${
                                         activeImage === imgUrl
                                             ? 'border-gold-400 shadow-md shadow-gold-400/20'
@@ -320,11 +303,11 @@ export const ProductDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Color / Shade / Size Selectors */}
+                    {/* Options Selectors */}
                     {options.length > 0 && (
                         <div className="space-y-5 border-t border-zinc-900/80 pt-6">
 
-                            {/* Color Selector */}
+                            {/* ── Colour chips (if any options have colour) ── */}
                             {uniqueColors.length > 0 && (
                                 <div className="space-y-3">
                                     <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
@@ -332,35 +315,23 @@ export const ProductDetail: React.FC = () => {
                                         {selectedColor && <span className="text-gold-400 font-bold ms-2">{selectedColor}</span>}
                                     </span>
                                     <div className="flex flex-wrap gap-2.5">
-                                        {uniqueColors.map((colName) => {
-                                            const isSelected = selectedColor === colName;
-                                            const matchingOpts = options.filter((o: any) => o.color_name === colName);
-                                            const hexColor = matchingOpts[0]?.color;
-                                            const shadesCount = Array.from(new Set(matchingOpts.map((o: any) => o.shade).filter(Boolean))).length;
-
+                                        {uniqueColors.map(({ color_name, color: hex }) => {
+                                            const isActive = selectedColor === color_name;
                                             return (
                                                 <button
-                                                    key={colName}
+                                                    key={color_name}
                                                     type="button"
-                                                    onClick={() => handleSelectColor(colName)}
-                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${
-                                                        isSelected
+                                                    onClick={() => handleSelectColor(color_name)}
+                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs transition-all cursor-pointer ${
+                                                        isActive
                                                             ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
                                                             : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
                                                     }`}
                                                 >
-                                                    {hexColor && (
-                                                        <span
-                                                            className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
-                                                            style={{ backgroundColor: hexColor }}
-                                                        />
+                                                    {hex && (
+                                                        <span className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0" style={{ backgroundColor: hex }} />
                                                     )}
-                                                    <span>{colName}</span>
-                                                    {shadesCount > 0 && (
-                                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-500'}`}>
-                                                            {shadesCount}
-                                                        </span>
-                                                    )}
+                                                    <span>{color_name}</span>
                                                 </button>
                                             );
                                         })}
@@ -368,135 +339,51 @@ export const ProductDetail: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* Shade Selector — shown as dedicated section after color is picked */}
-                            {selectedColor && availableShades.length > 0 && (
-                                <div className="space-y-2.5 bg-zinc-900/30 border border-zinc-800 rounded-2xl p-4">
-                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-gold-400 inline-block flex-shrink-0"></span>
-                                        {t('selectShade')}
-                                        {selectedShade && <span className="text-gold-400 font-bold normal-case tracking-normal">{selectedShade}</span>}
+                            {/* ── Individual option buttons (each option is its own button) ── */}
+                            {/* Shows all options under selected colour (or all if no colour system) */}
+                            <div className="space-y-2.5">
+                                {/* Section label */}
+                                {(optionsForColor.some((o: any) => o.shade) || optionsForColor.some((o: any) => o.size)) && (
+                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
+                                        {optionsForColor.some((o: any) => o.shade) ? t('selectShade') : t('size')}
                                     </span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableShades.map((shade) => {
-                                            const isShadeSelected = selectedShade === shade;
-                                            const shadeOpt = options.find((o: any) => o.color_name === selectedColor && o.shade === shade);
-                                            const shadeHex = shadeOpt?.color;
-                                            return (
-                                                <button
-                                                    key={shade}
-                                                    type="button"
-                                                    onClick={() => handleSelectShade(shade)}
-                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
-                                                        isShadeSelected
-                                                            ? 'bg-zinc-700 text-white border-zinc-500 shadow-sm'
-                                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border-zinc-800'
-                                                    }`}
-                                                >
-                                                    {shadeHex && (
-                                                        <span
-                                                            className="w-3 h-3 rounded-full border border-black/30 flex-shrink-0"
-                                                            style={{ backgroundColor: shadeHex }}
-                                                        />
-                                                    )}
-                                                    <span>{shade}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Shade Selector — only shown if no color grouping (standalone shades) */}
-                            {uniqueColors.length === 0 && availableShades.length > 0 && (
-                                <div className="space-y-2.5">
-                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center justify-between">
-                                        <span>{t('selectShade')}</span>
-                                        {selectedShade && <span className="text-gold-400 font-bold">{selectedShade}</span>}
-                                    </span>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        {availableShades.map((shadeName) => {
-                                            const isSelected = selectedShade === shadeName;
-
-                                            return (
-                                                <button
-                                                    key={shadeName}
-                                                    type="button"
-                                                    onClick={() => handleSelectShade(shadeName)}
-                                                    className={`flex items-center gap-2 px-4 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${isSelected
-                                                        ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                        : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
-                                                        }`}
-                                                >
-                                                    <span>{shadeName}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Size Selector */}
-                            {availableSizes.length > 0 && (
-                                <div className="space-y-2.5">
-                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider flex items-center justify-between">
-                                        <span>{t('size')}</span>
-                                        {selectedSize && <span className="text-gold-400 font-bold">{selectedSize}</span>}
-                                    </span>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        {availableSizes.map((sz) => {
-                                            const isSelected = selectedSize === sz;
-
-                                            return (
-                                                <button
-                                                    key={sz}
-                                                    type="button"
-                                                    onClick={() => handleSelectSize(sz)}
-                                                    className={`px-4 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${isSelected
-                                                        ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                        : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
-                                                        }`}
-                                                >
-                                                    <span>{sz}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Fallback flat options if product has no color_name and no shade */}
-                            {uniqueColors.length === 0 && availableShades.length === 0 && availableSizes.length === 0 && (
                                 <div className="flex flex-wrap gap-2.5">
-                                    {options.map((opt: any) => {
+                                    {optionsForColor.map((opt: any) => {
                                         const isSelected = selectedOption?.id === opt.id;
-                                        const sizeLbl = opt.size ? getLocalized(opt, 'size') : '';
-                                        const colLbl = opt.color_name ? getLocalized(opt, 'color_name') : '';
-                                        const priceLabel = `₪${opt.price}`;
-
-                                        const pillText = [sizeLbl, colLbl].filter(Boolean).join(' - ');
+                                        // Build label: shade > size > price fallback
+                                        const label = opt.shade || opt.size || `₪${Number(opt.price).toFixed(0)}`;
+                                        const sublabel = opt.shade && opt.size ? opt.size : null;
 
                                         return (
                                             <button
                                                 key={opt.id}
                                                 type="button"
-                                                onClick={() => setSelectedOption(opt)}
-                                                className={`flex items-center gap-2.5 px-4 py-2 border rounded-xl font-sans text-xs transition-all cursor-pointer ${isSelected
-                                                    ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                    : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
-                                                    }`}
+                                                onClick={() => handleSelectOption(opt)}
+                                                className={`flex flex-col items-center gap-0.5 px-4 py-2.5 border rounded-xl text-xs transition-all cursor-pointer ${
+                                                    isSelected
+                                                        ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
+                                                        : opt.is_available === false
+                                                            ? 'bg-zinc-900/40 text-zinc-600 border-zinc-800/50 line-through cursor-not-allowed'
+                                                            : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
+                                                }`}
+                                                title={opt.is_available === false ? (direction === 'rtl' ? 'غير متوفر' : 'Unavailable') : undefined}
                                             >
-                                                {opt.color && (
-                                                    <span
-                                                        className="w-3.5 h-3.5 rounded-full border border-black/40"
-                                                        style={{ backgroundColor: opt.color }}
-                                                    />
+                                                {/* Thumbnail preview if option has its own image */}
+                                                {opt.image_url && (
+                                                    <span className={`w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0 mb-1 ${isSelected ? 'border-black/30' : 'border-zinc-700'}`}>
+                                                        <img src={opt.image_url} alt={label} className="w-full h-full object-cover" />
+                                                    </span>
                                                 )}
-                                                <span>{pillText || `Option (${priceLabel})`}</span>
+                                                <span className="font-semibold">{label}</span>
+                                                {sublabel && <span className={`text-[10px] ${isSelected ? 'text-black/60' : 'text-zinc-500'}`}>{sublabel}</span>}
+                                                <span className={`text-[10px] font-bold ${isSelected ? 'text-black/70' : 'text-gold-400'}`}>₪{Number(opt.price).toFixed(0)}</span>
                                             </button>
                                         );
                                     })}
                                 </div>
-                            )}
+                            </div>
 
                         </div>
                     )}

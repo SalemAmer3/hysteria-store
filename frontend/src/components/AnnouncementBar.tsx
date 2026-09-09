@@ -32,6 +32,13 @@ export const AnnouncementBar: React.FC = () => {
 
     return (
         <div className="w-full bg-black text-white text-xs md:text-sm py-2 border-b border-zinc-900 overflow-hidden relative">
+            {/* Fade edges — left */}
+            <div className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
+                 style={{ background: 'linear-gradient(to right, #000 0%, transparent 100%)' }} />
+            {/* Fade edges — right */}
+            <div className="absolute right-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
+                 style={{ background: 'linear-gradient(to left, #000 0%, transparent 100%)' }} />
+
             {/* Track contains text duplicated twice — seamless loop via translateX(-50%) */}
             <div
                 className="animate-marquee-track"
