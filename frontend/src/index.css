@@ -657,3 +657,9 @@ body.light .shimmer {
     will-change: transform;
   }
 }
+
+/* ── Sort dropdown in category listing ── */
+.sort-select option {
+  background-color: #0d0d11;
+  color: #e4e4e7;
+}

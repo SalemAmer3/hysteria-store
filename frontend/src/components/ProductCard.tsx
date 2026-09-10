@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
+import { parseSizeLabel } from '../utils/sizeLabel';
 
 interface ProductCardProps {
     product: {
@@ -23,7 +24,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-    const { getLocalized, t } = useLanguage();
+    const { getLocalized, t, language } = useLanguage();
     const { toggleWishlist, isInWishlist, addToCart } = useCart();
     const heartRef = useRef<HTMLButtonElement>(null);
     const [heartAnimating, setHeartAnimating] = useState(false);
@@ -113,19 +114,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     <span>{t('viewProduct') || 'View Product'}</span>
                 </div>
 
-                {/* Sizes strip — kept exactly as before, sits above the view-btn */}
+                {/* Sizes strip — with unit labels */}
                 {hasOptions && (
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 pb-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex flex-wrap gap-1.5 justify-center items-center">
-                        {product.options?.map((o) => (
-                            o.size && (
+                        {product.options?.map((o) => {
+                            const { label } = parseSizeLabel(o.size, language as any);
+                            return label ? (
                                 <span
                                     key={o.id}
                                     className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-800 text-zinc-300"
                                 >
-                                    {getLocalized(o, 'size')}
+                                    {label}
                                 </span>
-                            )
-                        ))}
+                            ) : null;
+                        })}
                     </div>
                 )}
             </Link>

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { CategoryTree, collectDescendantIds } from '../components/CategoryTree';
-import { SlidersHorizontal, Trash2 } from 'lucide-react';
+import { SlidersHorizontal, Trash2, ChevronDown } from 'lucide-react';
+
+type SortKey = 'default' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
 
 export const CategoryListing: React.FC = () => {
     const { getLocalized, direction, t } = useLanguage();
@@ -18,6 +20,7 @@ export const CategoryListing: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
 
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
+    const [sortKey, setSortKey] = useState<SortKey>('default');
 
     const activeCategoryId = searchParams.get('category');
     const activeBrandId = searchParams.get('brand');
@@ -74,11 +77,40 @@ export const CategoryListing: React.FC = () => {
     }, [activeCategoryId, categories]);
 
     // Include products from the selected category AND all its descendants at any depth
-    const filteredProducts = products.filter((p) => {
-        if (!activeCategoryId || activeCategoryId === 'all') return true;
-        const matchIds = collectDescendantIds(activeCategoryId, categories);
-        return matchIds.has(p.category_id);
-    });
+    const filteredProducts = useMemo(() => {
+        let list = products.filter((p) => {
+            if (!activeCategoryId || activeCategoryId === 'all') return true;
+            const matchIds = collectDescendantIds(activeCategoryId, categories);
+            return matchIds.has(p.category_id);
+        });
+
+        // Sort
+        switch (sortKey) {
+            case 'price_asc':
+                list = [...list].sort((a, b) => {
+                    const aMin = Math.min(...(a.options?.map((o: any) => Number(o.price)) || [0]));
+                    const bMin = Math.min(...(b.options?.map((o: any) => Number(o.price)) || [0]));
+                    return aMin - bMin;
+                });
+                break;
+            case 'price_desc':
+                list = [...list].sort((a, b) => {
+                    const aMin = Math.min(...(a.options?.map((o: any) => Number(o.price)) || [0]));
+                    const bMin = Math.min(...(b.options?.map((o: any) => Number(o.price)) || [0]));
+                    return bMin - aMin;
+                });
+                break;
+            case 'name_asc':
+                list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                break;
+            case 'name_desc':
+                list = [...list].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                break;
+            default:
+                break;
+        }
+        return list;
+    }, [products, activeCategoryId, categories, sortKey]);
 
     const clearAllFilters = () => setSearchParams({});
 
@@ -147,15 +179,34 @@ export const CategoryListing: React.FC = () => {
                     </p>
                 </div>
 
-                {(activeCategoryId || activeBrandId || searchQuery) && (
-                    <button
-                        onClick={clearAllFilters}
-                        className="flex items-center gap-1.5 px-4 py-2 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-red-400 text-xs font-semibold rounded-full transition-colors cursor-pointer"
-                    >
-                        <Trash2 size={13} />
-                        <span>{t('clearFilters')}</span>
-                    </button>
-                )}
+                <div className="flex items-center gap-3 flex-wrap">
+                    {/* Sort dropdown */}
+                    <div className="relative">
+                        <select
+                            value={sortKey}
+                            onChange={e => setSortKey(e.target.value as SortKey)}
+                            className="appearance-none bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-semibold rounded-xl px-4 py-2 pr-8 focus:outline-none focus:border-gold-400 transition-colors cursor-pointer"
+                            style={{ direction: direction }}
+                        >
+                            <option value="default">{direction === 'rtl' ? 'الترتيب الافتراضي' : 'Default'}</option>
+                            <option value="price_asc">{direction === 'rtl' ? 'السعر: من الأقل' : 'Price: Low to High'}</option>
+                            <option value="price_desc">{direction === 'rtl' ? 'السعر: من الأعلى' : 'Price: High to Low'}</option>
+                            <option value="name_asc">{direction === 'rtl' ? 'الاسم: أ-ي' : 'Name: A–Z'}</option>
+                            <option value="name_desc">{direction === 'rtl' ? 'الاسم: ي-أ' : 'Name: Z–A'}</option>
+                        </select>
+                        <ChevronDown size={13} className={`absolute top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none ${direction === 'rtl' ? 'left-3' : 'right-3'}`} />
+                    </div>
+
+                    {(activeCategoryId || activeBrandId || searchQuery) && (
+                        <button
+                            onClick={clearAllFilters}
+                            className="flex items-center gap-1.5 px-4 py-2 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-red-400 text-xs font-semibold rounded-full transition-colors cursor-pointer"
+                        >
+                            <Trash2 size={13} />
+                            <span>{t('clearFilters')}</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-10 items-start">

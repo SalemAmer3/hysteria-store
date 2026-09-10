@@ -5,10 +5,11 @@ import { useCart } from '../context/CartContext';
 import { api } from '../services/api';
 import { Heart, ShoppingBag, ArrowLeft, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { parseSizeLabel } from '../utils/sizeLabel';
 
 export const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { getLocalized, direction, t } = useLanguage();
+    const { getLocalized, direction, t, language } = useLanguage();
     const { addToCart, toggleWishlist, isInWishlist } = useCart();
     const navigate = useNavigate();
 
@@ -121,13 +122,18 @@ export const ProductDetail: React.FC = () => {
 
     // Each option is a unique selectable item — no deduplication by value.
     // We only group by color_name for the colour selector row.
+    // For the hex value, find the first option that actually has a colour set.
     const uniqueColors = Array.from(
         new Map(
             options
                 .filter((o: any) => o.color_name)
-                .map((o: any) => [o.color_name, { color_name: o.color_name, color: o.color }])
-        ).values()
-    );
+                .map((o: any) => [o.color_name, o.color_name]) // collect unique names
+        ).keys()
+    ).map((colorName) => ({
+        color_name: colorName,
+        // Find the first option for this colour that has an actual hex value
+        color: options.find((o: any) => o.color_name === colorName && o.color)?.color ?? null,
+    }));
 
     // Options visible under the currently selected color (or all if no colour)
     const optionsForColor = selectedColor
@@ -307,12 +313,14 @@ export const ProductDetail: React.FC = () => {
                     {options.length > 0 && (
                         <div className="space-y-5 border-t border-zinc-900/80 pt-6">
 
-                            {/* ── Colour chips (if any options have colour) ── */}
+                            {/* ── Colour chips — always show ALL colours ── */}
                             {uniqueColors.length > 0 && (
                                 <div className="space-y-3">
                                     <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
                                         {t('selectColor')}
-                                        {selectedColor && <span className="text-gold-400 font-bold ms-2">{selectedColor}</span>}
+                                        {selectedColor && (
+                                            <span className="text-gold-400 font-bold ms-2">{selectedColor}</span>
+                                        )}
                                     </span>
                                     <div className="flex flex-wrap gap-2.5">
                                         {uniqueColors.map(({ color_name, color: hex }) => {
@@ -329,7 +337,10 @@ export const ProductDetail: React.FC = () => {
                                                     }`}
                                                 >
                                                     {hex && (
-                                                        <span className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0" style={{ backgroundColor: hex }} />
+                                                        <span
+                                                            className="w-4 h-4 rounded-full border border-black/40 flex-shrink-0"
+                                                            style={{ backgroundColor: hex }}
+                                                        />
                                                     )}
                                                     <span>{color_name}</span>
                                                 </button>
@@ -339,51 +350,107 @@ export const ProductDetail: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* ── Individual option buttons (each option is its own button) ── */}
-                            {/* Shows all options under selected colour (or all if no colour system) */}
-                            <div className="space-y-2.5">
-                                {/* Section label */}
-                                {(optionsForColor.some((o: any) => o.shade) || optionsForColor.some((o: any) => o.size)) && (
-                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
-                                        {optionsForColor.some((o: any) => o.shade) ? t('selectShade') : t('size')}
-                                    </span>
-                                )}
+                            {/* ── Individual option buttons under selected colour ── */}
+                            {/* If no colour system, shows all options */}
+                            {optionsForColor.length > 0 && (
+                                <div className="space-y-2.5">
+                                    {/* Section label — show only when options have shade or size */}
+                                    {(optionsForColor.some((o: any) => o.shade) ||
+                                        optionsForColor.some((o: any) => o.size)) && (
+                                        <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
+                                            {optionsForColor.some((o: any) => o.shade)
+                                                ? t('selectShade')
+                                                : t('size')}
+                                        </span>
+                                    )}
 
-                                <div className="flex flex-wrap gap-2.5">
-                                    {optionsForColor.map((opt: any) => {
-                                        const isSelected = selectedOption?.id === opt.id;
-                                        // Build label: shade > size > price fallback
-                                        const label = opt.shade || opt.size || `₪${Number(opt.price).toFixed(0)}`;
-                                        const sublabel = opt.shade && opt.size ? opt.size : null;
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {optionsForColor.map((opt: any) => {
+                                            const isSelected = selectedOption?.id === opt.id;
 
-                                        return (
-                                            <button
-                                                key={opt.id}
-                                                type="button"
-                                                onClick={() => handleSelectOption(opt)}
-                                                className={`flex flex-col items-center gap-0.5 px-4 py-2.5 border rounded-xl text-xs transition-all cursor-pointer ${
-                                                    isSelected
-                                                        ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
-                                                        : opt.is_available === false
-                                                            ? 'bg-zinc-900/40 text-zinc-600 border-zinc-800/50 line-through cursor-not-allowed'
-                                                            : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
-                                                }`}
-                                                title={opt.is_available === false ? (direction === 'rtl' ? 'غير متوفر' : 'Unavailable') : undefined}
-                                            >
-                                                {/* Thumbnail preview if option has its own image */}
-                                                {opt.image_url && (
-                                                    <span className={`w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0 mb-1 ${isSelected ? 'border-black/30' : 'border-zinc-700'}`}>
-                                                        <img src={opt.image_url} alt={label} className="w-full h-full object-cover" />
+                                            // ── Build display label ──────────────────────────────
+                                            // shade takes priority, then size (with unit), then price
+                                            const { label: sizeLabel, typeHint } = parseSizeLabel(opt.size, language as any);
+                                            const mainLabel  = opt.shade || sizeLabel || `₪${Number(opt.price).toFixed(0)}`;
+                                            // Show size below shade if both exist
+                                            const subLabel   = opt.shade && sizeLabel ? sizeLabel : null;
+                                            // Show unit type hint (سعة / حجم) as a tiny badge
+                                            const unitBadge  = !opt.shade && typeHint ? typeHint : null;
+
+                                            return (
+                                                <button
+                                                    key={opt.id}
+                                                    type="button"
+                                                    onClick={() => handleSelectOption(opt)}
+                                                    disabled={opt.is_available === false}
+                                                    className={`flex flex-col items-center gap-0.5 px-4 py-2.5 border rounded-xl text-xs transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
+                                                            : opt.is_available === false
+                                                                ? 'bg-zinc-900/40 text-zinc-600 border-zinc-800/50 line-through opacity-50 cursor-not-allowed'
+                                                                : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
+                                                    }`}
+                                                    title={
+                                                        opt.is_available === false
+                                                            ? direction === 'rtl' ? 'غير متوفر' : 'Unavailable'
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {/* Thumbnail if option has image */}
+                                                    {opt.image_url && (
+                                                        <span
+                                                            className={`w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0 mb-1 ${
+                                                                isSelected ? 'border-black/30' : 'border-zinc-700'
+                                                            }`}
+                                                        >
+                                                            <img
+                                                                src={opt.image_url}
+                                                                alt={mainLabel}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </span>
+                                                    )}
+
+                                                    {/* Unit type badge (سعة / حجم) */}
+                                                    {unitBadge && (
+                                                        <span
+                                                            className={`text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded-full mb-0.5 ${
+                                                                isSelected
+                                                                    ? 'bg-black/20 text-black'
+                                                                    : 'bg-zinc-800 text-zinc-500'
+                                                            }`}
+                                                        >
+                                                            {unitBadge}
+                                                        </span>
+                                                    )}
+
+                                                    <span className="font-semibold">{mainLabel}</span>
+
+                                                    {/* Sub-label: size under shade */}
+                                                    {subLabel && (
+                                                        <span
+                                                            className={`text-[10px] ${
+                                                                isSelected ? 'text-black/60' : 'text-zinc-500'
+                                                            }`}
+                                                        >
+                                                            {subLabel}
+                                                        </span>
+                                                    )}
+
+                                                    {/* Price */}
+                                                    <span
+                                                        className={`text-[10px] font-bold ${
+                                                            isSelected ? 'text-black/70' : 'text-gold-400'
+                                                        }`}
+                                                    >
+                                                        ₪{Number(opt.price).toFixed(0)}
                                                     </span>
-                                                )}
-                                                <span className="font-semibold">{label}</span>
-                                                {sublabel && <span className={`text-[10px] ${isSelected ? 'text-black/60' : 'text-zinc-500'}`}>{sublabel}</span>}
-                                                <span className={`text-[10px] font-bold ${isSelected ? 'text-black/70' : 'text-gold-400'}`}>₪{Number(opt.price).toFixed(0)}</span>
-                                            </button>
-                                        );
-                                    })}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                         </div>
                     )}

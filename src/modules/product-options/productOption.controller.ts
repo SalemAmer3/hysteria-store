@@ -5,12 +5,23 @@ import { R2Service } from '../../services/r2.service';
 import { CustomError } from '../../middleware/errorHandler';
 import { getPaginationQuery, buildPaginatedResponse } from '../../lib/pagination';
 
+const priceSchema = z.preprocess((val) => {
+    if (val === undefined || val === null || val === '') return NaN;
+    // Replace comma decimal separator (e.g. "1,5" → "1.5")
+    const str = String(val).replace(',', '.');
+    const num = Number(str);
+    return isNaN(num) ? NaN : num;
+}, z.number('Price must be a number')
+    .nonnegative('Price cannot be negative')
+    .finite('Price must be a finite number')
+);
+
 const productOptionSchema = z.object({
     product_id: z.string().uuid('Invalid product_id format'),
     color_name: z.string().nullable().optional(),
     shade: z.string().nullable().optional(),
     size: z.string().nullable().optional(),
-    price: z.preprocess((val) => (val === undefined || val === '' || val === null ? NaN : Number(val)), z.number().positive('Price must be greater than 0')),
+    price: priceSchema,
     color: z.string().nullable().optional(),
     image_url: z.string().url().nullable().optional(),
     arabic: z.string().nullable().optional(),
