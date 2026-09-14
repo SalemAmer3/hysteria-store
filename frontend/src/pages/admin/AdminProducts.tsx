@@ -116,26 +116,40 @@ export const AdminProducts: React.FC = () => {
         return () => clearTimeout(timer);
     }, [search]);
 
-    // Auto-translate description using MyMemory free API
-    // Source: Arabic (arabic_description) → translates to EN (description) + HE (hebrew_description)
+    // Auto-translate description using the backend proxy → MyMemory
+    // Source: Arabic (arabic_description) → EN (description) + HE (hebrew_description)
     const autoTranslate = async () => {
         if (!form.arabic_description.trim()) return;
         setTranslating(true);
         try {
-            const [enRes, heRes] = await Promise.all([
-                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.arabic_description)}&langpair=ar|en`),
-                fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(form.arabic_description)}&langpair=ar|he`),
+            // Fire both translations in parallel via the backend proxy.
+            // The proxy handles timeouts, quota errors, and empty results.
+            const [enRes, heRes] = await Promise.allSettled([
+                api.translate.text(form.arabic_description, 'ar', 'en'),
+                api.translate.text(form.arabic_description, 'ar', 'he'),
             ]);
-            const [enData, heData] = await Promise.all([enRes.json(), heRes.json()]);
-            const enText = enData?.responseData?.translatedText || '';
-            const heText = heData?.responseData?.translatedText || '';
+
+            const enText = enRes.status === 'fulfilled' ? (enRes.value?.data?.translated || '') : '';
+            const heText = heRes.status === 'fulfilled' ? (heRes.value?.data?.translated || '') : '';
+
+            // Show a warning if either translation failed
+            const failures: string[] = [];
+            if (enRes.status === 'rejected') failures.push('English');
+            if (heRes.status === 'rejected') failures.push('Hebrew');
+            if (!enText && enRes.status === 'fulfilled') failures.push('English (empty result)');
+            if (!heText && heRes.status === 'fulfilled') failures.push('Hebrew (empty result)');
+
+            if (failures.length > 0) {
+                setError(`Translation failed for: ${failures.join(', ')}. Please fill manually.`);
+            }
+
             setForm(f => ({
                 ...f,
-                description: enText || f.description,
-                hebrew_description: heText || f.hebrew_description,
+                description:         enText || f.description,
+                hebrew_description:  heText || f.hebrew_description,
             }));
         } catch {
-            // silently fail — user can fill manually
+            setError('Translation service unavailable. Please fill the fields manually.');
         } finally {
             setTranslating(false);
         }

@@ -177,4 +177,14 @@ export const api = {
         update: (id: string, body: any) => request(`/admin/ticker/${id}`, { method: 'PUT', body }),
         delete: (id: string) => request(`/admin/ticker/${id}`, { method: 'DELETE' }),
     },
+
+    translate: {
+        /**
+         * Translate a text string via the backend proxy (POST /api/admin/translate).
+         * Returns { success: true, data: { translated: string } } on success.
+         * Throws an Error with a user-readable message on failure.
+         */
+        text: (text: string, from: string, to: 'en' | 'he' | 'ar') =>
+            request('/admin/translate', { method: 'POST', body: { text, from, to } }),
+    },
 };
