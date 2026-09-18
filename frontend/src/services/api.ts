@@ -80,10 +80,22 @@ export const api = {
     },
 
     products: {
-        listPublic: (page = 1, limit = 20, search?: string, category?: string, brand?: string) => {
+        listPublic: (
+            page = 1,
+            limit = 20,
+            search?: string,
+            category?: string,       // single category id (legacy)
+            brand?: string,
+            categoryIds?: string[],  // multiple category ids (category + descendants)
+        ) => {
             const params = new URLSearchParams({ page: String(page), limit: String(limit) });
             if (search) params.set('search', search);
-            if (category) params.set('category', category);
+            // Prefer category_ids (multi) over single category when both provided
+            if (categoryIds && categoryIds.length > 0) {
+                params.set('category_ids', categoryIds.join(','));
+            } else if (category) {
+                params.set('category', category);
+            }
             if (brand) params.set('brand', brand);
             return request(`/products?${params.toString()}`);
         },

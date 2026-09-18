@@ -14,9 +14,12 @@ export interface PaginatedResult<T> {
 }
 
 export function getPaginationQuery(req: Request) {
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 20));
-    const skip = (page - 1) * limit;
+    const page  = Math.max(1, parseInt(req.query.page  as string) || 1);
+    // Admin endpoints keep 100 max; public product listing allows up to 1000
+    // so the frontend can fetch all matching products in one request.
+    const maxLimit = req.path?.includes('/admin/') ? 100 : 1000;
+    const limit = Math.max(1, Math.min(maxLimit, parseInt(req.query.limit as string) || 20));
+    const skip  = (page - 1) * limit;
     return { page, limit, skip };
 }
 

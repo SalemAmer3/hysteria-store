@@ -7,7 +7,6 @@ import { CategoryTree, collectDescendantIds } from '../components/CategoryTree';
 import { SlidersHorizontal, Trash2, ChevronDown } from 'lucide-react';
 
 type SortKey = 'default' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
-
 export const CategoryListing: React.FC = () => {
     const { getLocalized, direction, t } = useLanguage();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -30,19 +29,31 @@ export const CategoryListing: React.FC = () => {
         async function loadData() {
             setLoading(true);
             try {
+                // Load categories + brands first so we can build the
+                // descendant-id list needed for the products request.
                 const [catsRes, brandsRes] = await Promise.all([
                     api.categories.listPublic(),
                     api.brands.listPublic(),
                 ]);
-                setCategories(catsRes.data.filter((c: any) => c.is_active));
+                const activeCats = catsRes.data.filter((c: any) => c.is_active);
+                setCategories(activeCats);
                 setBrands(brandsRes.data);
+
+                // Build the full set of category IDs to query:
+                // selected category + every descendant at any depth.
+                let categoryIds: string[] | undefined;
+                if (activeCategoryId && activeCategoryId !== 'all') {
+                    const ids = collectDescendantIds(activeCategoryId, activeCats);
+                    categoryIds = Array.from(ids);
+                }
 
                 const productsRes = await api.products.listPublic(
                     currentPage,
-                    100,
+                    1000,                        // fetch all matching — sort is client-side
                     searchQuery || undefined,
-                    undefined,
+                    undefined,                   // single-category param unused
                     (activeBrandId && activeBrandId !== 'all') ? activeBrandId : undefined,
+                    categoryIds,                 // ← server-side multi-category filter
                 );
                 setProducts(productsRes.data);
                 if (productsRes.pagination) {
@@ -55,7 +66,7 @@ export const CategoryListing: React.FC = () => {
             }
         }
         loadData();
-    }, [currentPage, searchQuery, activeBrandId]);
+    }, [currentPage, activeCategoryId, searchQuery, activeBrandId]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -76,41 +87,37 @@ export const CategoryListing: React.FC = () => {
         }
     }, [activeCategoryId, categories]);
 
-    // Include products from the selected category AND all its descendants at any depth
+    // Products are already filtered server-side (category + brand + search).
+    // This useMemo only handles client-side sorting.
     const filteredProducts = useMemo(() => {
-        let list = products.filter((p) => {
-            if (!activeCategoryId || activeCategoryId === 'all') return true;
-            const matchIds = collectDescendantIds(activeCategoryId, categories);
-            return matchIds.has(p.category_id);
-        });
+        let list = [...products];
 
-        // Sort
         switch (sortKey) {
             case 'price_asc':
-                list = [...list].sort((a, b) => {
+                list.sort((a, b) => {
                     const aMin = Math.min(...(a.options?.map((o: any) => Number(o.price)) || [0]));
                     const bMin = Math.min(...(b.options?.map((o: any) => Number(o.price)) || [0]));
                     return aMin - bMin;
                 });
                 break;
             case 'price_desc':
-                list = [...list].sort((a, b) => {
+                list.sort((a, b) => {
                     const aMin = Math.min(...(a.options?.map((o: any) => Number(o.price)) || [0]));
                     const bMin = Math.min(...(b.options?.map((o: any) => Number(o.price)) || [0]));
                     return bMin - aMin;
                 });
                 break;
             case 'name_asc':
-                list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 break;
             case 'name_desc':
-                list = [...list].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                list.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
                 break;
             default:
                 break;
         }
         return list;
-    }, [products, activeCategoryId, categories, sortKey]);
+    }, [products, sortKey]);
 
     const clearAllFilters = () => setSearchParams({});
 

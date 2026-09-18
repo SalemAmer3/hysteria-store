@@ -23,21 +23,42 @@ export class ProductController {
     static async listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page, limit, skip } = getPaginationQuery(req);
-            const search = req.query.search ? String(req.query.search) : undefined;
-            const categoryId = req.query.category ? String(req.query.category) : undefined;
-            const brandId = req.query.brand ? String(req.query.brand) : undefined;
+            const search     = req.query.search ? String(req.query.search) : undefined;
+            const brandId    = req.query.brand  ? String(req.query.brand)  : undefined;
+
+            // category_ids = comma-separated list of UUIDs (selected category + all its
+            // descendants, resolved client-side from the category tree).
+            // Falls back to legacy single `category` param for backwards compat.
+            let categoryIds: string[] | undefined;
+            if (req.query.category_ids) {
+                categoryIds = String(req.query.category_ids)
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean);
+            } else if (req.query.category) {
+                categoryIds = [String(req.query.category)];
+            }
 
             const where: any = {};
+
             if (search) {
                 where.OR = [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { arabic: { contains: search, mode: 'insensitive' } },
-                    { hebrew: { contains: search, mode: 'insensitive' } },
-                    { sku: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive' } },
+                    { name:               { contains: search, mode: 'insensitive' } },
+                    { arabic:             { contains: search, mode: 'insensitive' } },
+                    { hebrew:             { contains: search, mode: 'insensitive' } },
+                    { sku:                { contains: search, mode: 'insensitive' } },
+                    { description:        { contains: search, mode: 'insensitive' } },
+                    { arabic_description: { contains: search, mode: 'insensitive' } },
+                    { hebrew_description: { contains: search, mode: 'insensitive' } },
                 ];
             }
-            if (categoryId) where.category_id = categoryId;
+
+            if (categoryIds && categoryIds.length === 1) {
+                where.category_id = categoryIds[0];
+            } else if (categoryIds && categoryIds.length > 1) {
+                where.category_id = { in: categoryIds };
+            }
+
             if (brandId) where.brand_id = brandId;
 
             const [products, total] = await Promise.all([
@@ -45,9 +66,9 @@ export class ProductController {
                     where, skip, take: limit,
                     include: {
                         category: { select: { id: true, name: true, is_active: true } },
-                        brand: { select: { id: true, name: true } },
-                        options: true,
-                        images: true,
+                        brand:    { select: { id: true, name: true } },
+                        options:  true,
+                        images:   true,
                     },
                     orderBy: { created_at: 'desc' },
                 }),
