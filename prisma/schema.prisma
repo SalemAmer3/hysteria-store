@@ -39,6 +39,7 @@ model Product {
   hebrew               String?
   arabic_description   String?
   hebrew_description   String?
+  search_keywords      String[]        @default([])
   created_at           DateTime        @default(now())
   updated_at           DateTime        @updatedAt
 

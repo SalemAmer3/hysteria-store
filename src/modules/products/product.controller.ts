@@ -4,6 +4,9 @@ import { prisma } from '../../lib/prisma';
 import { R2Service } from '../../services/r2.service';
 import { CustomError } from '../../middleware/errorHandler';
 import { getPaginationQuery, buildPaginatedResponse } from '../../lib/pagination';
+import { normalizeForSearch } from '../../lib/arabicNormalization';
+import { expandQueryWithSynonyms } from '../../lib/synonyms';
+import { rankProducts, SearchableProduct } from '../../lib/searchRanking';
 
 const productSchema = z.object({
     name: z.string().min(1, 'Product name is required'),
@@ -15,11 +18,89 @@ const productSchema = z.object({
     hebrew: z.string().nullable().optional(),
     arabic_description: z.string().nullable().optional(),
     hebrew_description: z.string().nullable().optional(),
+    search_keywords: z.array(z.string()).optional(),
 });
 
 const updateProductSchema = productSchema.partial();
 
 export class ProductController {
+    /**
+     * Autocomplete/Suggestions endpoint
+     * Returns quick search suggestions based on query
+     */
+    static async autocomplete(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const query = req.query.q ? String(req.query.q).trim() : '';
+            const limit = req.query.limit ? Math.min(Number(req.query.limit), 10) : 5;
+            
+            if (!query || query.length < 2) {
+                res.status(200).json({ success: true, data: { suggestions: [], products: [] } });
+                return;
+            }
+            
+            const normalizedQuery = normalizeForSearch(query);
+            const expandedTerms = expandQueryWithSynonyms(query);
+            
+            // Build search conditions
+            const searchConditions: any[] = [];
+            expandedTerms.forEach(term => {
+                searchConditions.push(
+                    { name:    { contains: term, mode: 'insensitive' } },
+                    { arabic:  { contains: term, mode: 'insensitive' } },
+                    { search_keywords: { has: term } },
+                );
+            });
+            
+            searchConditions.push(
+                { name:    { contains: normalizedQuery, mode: 'insensitive' } },
+                { arabic:  { contains: normalizedQuery, mode: 'insensitive' } },
+            );
+            
+            // Fetch matching products
+            const products = await prisma.product.findMany({
+                where: { OR: searchConditions },
+                include: {
+                    category: { select: { id: true, name: true, arabic: true } },
+                    brand:    { select: { id: true, name: true } },
+                    images:   { select: { image_url: true }, take: 1 },
+                    options:  { select: { price: true }, take: 1 },
+                },
+                take: limit * 3, // Fetch more for ranking
+            });
+            
+            // Rank products
+            const ranked = rankProducts(products as SearchableProduct[], query);
+            
+            // Extract unique suggestions from product names
+            const suggestions = Array.from(
+                new Set(
+                    ranked
+                        .slice(0, limit)
+                        .map(p => p.arabic || p.name)
+                )
+            ).slice(0, limit);
+            
+            // Return top products with images
+            const topProducts = ranked.slice(0, limit).map(p => ({
+                id: p.id,
+                name: p.arabic || p.name,
+                image: (p as any).images?.[0]?.image_url || null,
+                price: (p as any).options?.[0]?.price || null,
+                category: p.category?.arabic || p.category?.name || null,
+            }));
+            
+            res.status(200).json({
+                success: true,
+                data: {
+                    suggestions,
+                    products: topProducts,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { page, limit, skip } = getPaginationQuery(req);
@@ -41,18 +122,7 @@ export class ProductController {
 
             const where: any = {};
 
-            if (search) {
-                where.OR = [
-                    { name:               { contains: search, mode: 'insensitive' } },
-                    { arabic:             { contains: search, mode: 'insensitive' } },
-                    { hebrew:             { contains: search, mode: 'insensitive' } },
-                    { sku:                { contains: search, mode: 'insensitive' } },
-                    { description:        { contains: search, mode: 'insensitive' } },
-                    { arabic_description: { contains: search, mode: 'insensitive' } },
-                    { hebrew_description: { contains: search, mode: 'insensitive' } },
-                ];
-            }
-
+            // Apply category and brand filters first
             if (categoryIds && categoryIds.length === 1) {
                 where.category_id = categoryIds[0];
             } else if (categoryIds && categoryIds.length > 1) {
@@ -61,20 +131,76 @@ export class ProductController {
 
             if (brandId) where.brand_id = brandId;
 
-            const [products, total] = await Promise.all([
-                prisma.product.findMany({
-                    where, skip, take: limit,
+            // If search query provided, use advanced search with ranking
+            if (search && search.trim().length > 0) {
+                // Step 1: Build broad PostgreSQL query to get candidate products
+                const normalizedQuery = normalizeForSearch(search);
+                const expandedTerms = expandQueryWithSynonyms(search);
+                
+                // Build OR conditions for all expanded terms
+                const searchConditions: any[] = [];
+                
+                expandedTerms.forEach(term => {
+                    searchConditions.push(
+                        { name:               { contains: term, mode: 'insensitive' } },
+                        { arabic:             { contains: term, mode: 'insensitive' } },
+                        { hebrew:             { contains: term, mode: 'insensitive' } },
+                        { sku:                { contains: term, mode: 'insensitive' } },
+                        { description:        { contains: term, mode: 'insensitive' } },
+                        { arabic_description: { contains: term, mode: 'insensitive' } },
+                        { hebrew_description: { contains: term, mode: 'insensitive' } },
+                        { search_keywords:    { has: term } },
+                    );
+                });
+                
+                // Also check normalized versions
+                searchConditions.push(
+                    { name:               { contains: normalizedQuery, mode: 'insensitive' } },
+                    { arabic:             { contains: normalizedQuery, mode: 'insensitive' } },
+                    { hebrew:             { contains: normalizedQuery, mode: 'insensitive' } },
+                );
+                
+                where.OR = searchConditions;
+                
+                // Step 2: Fetch all matching products (without pagination first)
+                const allProducts = await prisma.product.findMany({
+                    where,
                     include: {
-                        category: { select: { id: true, name: true, is_active: true } },
+                        category: { select: { id: true, name: true, arabic: true, hebrew: true, is_active: true } },
                         brand:    { select: { id: true, name: true } },
                         options:  true,
                         images:   true,
                     },
-                    orderBy: { created_at: 'desc' },
-                }),
-                prisma.product.count({ where }),
-            ]);
-            res.status(200).json(buildPaginatedResponse(products, total, page, limit));
+                });
+                
+                // Step 3: Rank products by relevance
+                const rankedProducts = rankProducts(
+                    allProducts as SearchableProduct[],
+                    search
+                );
+                
+                // Step 4: Apply pagination to ranked results
+                const total = rankedProducts.length;
+                const paginatedProducts = rankedProducts.slice(skip, skip + limit);
+                
+                res.status(200).json(buildPaginatedResponse(paginatedProducts, total, page, limit));
+            } else {
+                // No search query - return normal listing
+                const [products, total] = await Promise.all([
+                    prisma.product.findMany({
+                        where, skip, take: limit,
+                        include: {
+                            category: { select: { id: true, name: true, is_active: true } },
+                            brand:    { select: { id: true, name: true } },
+                            options:  true,
+                            images:   true,
+                        },
+                        orderBy: { created_at: 'desc' },
+                    }),
+                    prisma.product.count({ where }),
+                ]);
+                res.status(200).json(buildPaginatedResponse(products, total, page, limit));
+            }
         } catch (error) { next(error); }
     }
 
@@ -159,6 +285,7 @@ export class ProductController {
                     hebrew: body.hebrew ?? null,
                     arabic_description: body.arabic_description ?? null,
                     hebrew_description: body.hebrew_description ?? null,
+                    search_keywords: body.search_keywords ?? [],
                 },
             });
             res.status(201).json({ success: true, data: product });
@@ -193,6 +320,7 @@ export class ProductController {
                     hebrew:              body.hebrew           !== undefined ? body.hebrew           : product.hebrew,
                     arabic_description:  body.arabic_description  !== undefined ? body.arabic_description  : (product as any).arabic_description,
                     hebrew_description:  body.hebrew_description  !== undefined ? body.hebrew_description  : (product as any).hebrew_description,
+                    search_keywords:     body.search_keywords  !== undefined ? body.search_keywords  : (product as any).search_keywords,
                 },
             });
             res.status(200).json({ success: true, data: updatedProduct });

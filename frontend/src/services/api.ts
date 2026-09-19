@@ -80,6 +80,10 @@ export const api = {
     },
 
     products: {
+        autocomplete: (query: string, limit = 5) => {
+            const params = new URLSearchParams({ q: query, limit: String(limit) });
+            return request(`/products/autocomplete?${params.toString()}`);
+        },
         listPublic: (
             page = 1,
             limit = 20,

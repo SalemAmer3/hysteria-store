@@ -5,6 +5,7 @@ import { authenticateAdmin } from '../../middleware/auth';
 const router = Router();
 
 // Public routes
+router.get('/products/autocomplete', ProductController.autocomplete);
 router.get('/products', ProductController.listPublic);
 router.get('/products/:id', ProductController.getPublic);
 

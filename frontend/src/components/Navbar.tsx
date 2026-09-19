@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 // import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Search, ShoppingBag, Heart, Menu, X, Sun, Moon, Instagram, Facebook, MessageCircle } from 'lucide-react';
+import { ShoppingBag, Heart, Menu, X, Sun, Moon, Instagram, Facebook, MessageCircle } from 'lucide-react';
+import { SearchWithAutocomplete } from './SearchWithAutocomplete';
 
 export const Navbar: React.FC = () => {
     const { language, setLanguage, direction, t } = useLanguage();
     const { cart, wishlist } = useCart();
     // const { isAuthenticated, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const navigate = useNavigate();
     const location = useLocation();
 
-    const [searchQuery, setSearchQuery] = useState('');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -31,13 +30,6 @@ export const Navbar: React.FC = () => {
     useEffect(() => {
         setMobileMenuOpen(false);
     }, [location]);
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-        }
-    };
 
     const handleLangChange = (lang: 'ar' | 'en' | 'he') => {
         setLanguage(lang);
@@ -121,23 +113,7 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     {/* Search bar — visible on ALL screen sizes */}
-                    <form onSubmit={handleSearchSubmit} className="flex flex-1 relative select-none min-w-0">
-                        <input
-                            type="search"
-                            placeholder={t('searchPlaceholder')}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`w-full bg-zinc-900/60 border border-zinc-800 text-zinc-100 placeholder-zinc-500 rounded-full py-2 text-sm focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400 transition-all ${direction === 'rtl' ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
-                            dir={direction}
-                        />
-                        <button
-                            type="submit"
-                            aria-label={t('searchPlaceholder')}
-                            className={`absolute top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer ${direction === 'rtl' ? 'left-3' : 'right-3'}`}
-                        >
-                            <Search size={17} />
-                        </button>
-                    </form>
+                    <SearchWithAutocomplete className="flex-1" />
 
                     {/* Icons row */}
                     <div className="flex items-center gap-1 md:gap-5 flex-shrink-0">
@@ -257,23 +233,10 @@ export const Navbar: React.FC = () => {
             >
                 <div className="space-y-8 select-none">
                     {/* Mobile search */}
-                    <form onSubmit={handleSearchSubmit} className="relative w-full">
-                        <input
-                            type="text"
-                            placeholder={t('searchPlaceholder')}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 rounded-lg px-4 py-2 focus:outline-none focus:border-gold-400 text-sm"
-                            dir={direction}
-                        />
-                        <button
-                            type="submit"
-                            className={`absolute top-1/2 -translate-y-1/2 text-zinc-400 cursor-pointer ${direction === 'rtl' ? 'left-3' : 'right-3'
-                                }`}
-                        >
-                            <Search size={16} />
-                        </button>
-                    </form>
+                    <SearchWithAutocomplete 
+                        className="w-full"
+                        onSubmit={() => setMobileMenuOpen(false)}
+                    />
 
                     {/* Navigation Links */}
                     <div className="flex flex-col gap-4 text-base font-semibold">
