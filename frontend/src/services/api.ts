@@ -66,7 +66,7 @@ export const api = {
     },
 
     categories: {
-        listPublic: () => request('/categories?limit=100'),
+        listPublic: () => request('/categories?limit=500'),
         getPublic: (id: string) => request(`/categories/${id}`),
         listAdmin: (page = 1, limit = 20, search?: string) => {
             const params = new URLSearchParams({ page: String(page), limit: String(limit) });

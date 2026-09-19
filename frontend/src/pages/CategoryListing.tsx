@@ -15,8 +15,6 @@ export const CategoryListing: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
 
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
     const [sortKey, setSortKey] = useState<SortKey>('default');
@@ -29,8 +27,6 @@ export const CategoryListing: React.FC = () => {
         async function loadData() {
             setLoading(true);
             try {
-                // Load categories + brands first so we can build the
-                // descendant-id list needed for the products request.
                 const [catsRes, brandsRes] = await Promise.all([
                     api.categories.listPublic(),
                     api.brands.listPublic(),
@@ -39,8 +35,6 @@ export const CategoryListing: React.FC = () => {
                 setCategories(activeCats);
                 setBrands(brandsRes.data);
 
-                // Build the full set of category IDs to query:
-                // selected category + every descendant at any depth.
                 let categoryIds: string[] | undefined;
                 if (activeCategoryId && activeCategoryId !== 'all') {
                     const ids = collectDescendantIds(activeCategoryId, activeCats);
@@ -48,17 +42,14 @@ export const CategoryListing: React.FC = () => {
                 }
 
                 const productsRes = await api.products.listPublic(
-                    currentPage,
-                    1000,                        // fetch all matching — sort is client-side
+                    1,
+                    1000,
                     searchQuery || undefined,
-                    undefined,                   // single-category param unused
+                    undefined,
                     (activeBrandId && activeBrandId !== 'all') ? activeBrandId : undefined,
-                    categoryIds,                 // ← server-side multi-category filter
+                    categoryIds,
                 );
                 setProducts(productsRes.data);
-                if (productsRes.pagination) {
-                    setTotalPages(productsRes.pagination.totalPages || 1);
-                }
             } catch (err) {
                 console.error('Failed to load listings data', err);
             } finally {
@@ -66,11 +57,9 @@ export const CategoryListing: React.FC = () => {
             }
         }
         loadData();
-    }, [currentPage, activeCategoryId, searchQuery, activeBrandId]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeCategoryId, activeBrandId, searchQuery]);
+    // currentPage intentionally excluded — we always fetch page 1 with limit 1000
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeCategoryId, searchQuery, activeBrandId]);
 
     // Auto-expand the full ancestor chain when a deep category is active
     useEffect(() => {
@@ -179,7 +168,17 @@ export const CategoryListing: React.FC = () => {
             <div className="py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-900 mb-8">
                 <div>
                     <h1 className="text-2xl md:text-4xl font-extrabold text-zinc-100 flex items-center gap-2">
-                        <span>{searchQuery ? `${t('searchResult')}: "${searchQuery}"` : t('categories')}</span>
+                        <span>
+                            {searchQuery
+                                ? `${t('searchResult')}: "${searchQuery}"`
+                                : activeBrandId && activeBrandId !== 'all'
+                                    ? (brands.find(b => b.id === activeBrandId)?.name || t('brands'))
+                                    : activeBrandId === 'all'
+                                        ? t('brands')
+                                        : activeCategoryId && activeCategoryId !== 'all'
+                                            ? (categories.find(c => c.id === activeCategoryId)?.name || t('categories'))
+                                            : t('categories')}
+                        </span>
                     </h1>
                     <p className="text-xs md:text-sm text-zinc-550 mt-1 font-light">
                         {direction === 'rtl' ? `عرض ${filteredProducts.length} منتج` : `Showing ${filteredProducts.length} products`}
@@ -245,8 +244,7 @@ export const CategoryListing: React.FC = () => {
                                 style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
                             >
                                 {direction === 'rtl' ? 'جميع الماركات' : 'All Brands'}
-                            </button>
-                            {brands.map((b) => (
+                            </button>                            {brands.map((b) => (
                                 <button
                                     key={b.id}
                                     onClick={() => handleBrandClick(b.id)}
@@ -321,28 +319,6 @@ export const CategoryListing: React.FC = () => {
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
-
-                            {totalPages > 1 && (
-                                <div className="flex justify-center items-center gap-4 pt-10 border-t border-zinc-900/60 font-sans">
-                                    <button
-                                        disabled={currentPage === 1}
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        className="p-2 px-4 rounded-xl bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-850 text-zinc-300 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer text-xs font-bold"
-                                    >
-                                        {direction === 'rtl' ? 'السابق' : 'Previous'}
-                                    </button>
-                                    <span className="text-zinc-500 text-xs font-semibold">
-                                        {currentPage} / {totalPages}
-                                    </span>
-                                    <button
-                                        disabled={currentPage === totalPages}
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                        className="p-2 px-4 rounded-xl bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-850 text-zinc-300 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer text-xs font-bold"
-                                    >
-                                        {direction === 'rtl' ? 'التالي' : 'Next'}
-                                    </button>
-                                </div>
-                            )}
                         </>
                     )}
                 </div>

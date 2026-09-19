@@ -160,8 +160,8 @@ export const AdminProducts: React.FC = () => {
         try {
             const [prodsRes, catsRes, brandsRes] = await Promise.all([
                 api.products.listAdmin(page, 15, debouncedSearch || undefined),
-                api.categories.listPublic(),
-                api.brands.listPublic(),
+                api.categories.listAdmin(1, 1000),   // all categories including inactive
+                api.brands.listAdmin(1, 500),
             ]);
             setProducts(prodsRes.data);
             setTotalPages(prodsRes.pagination?.totalPages || 1);
@@ -293,10 +293,13 @@ export const AdminProducts: React.FC = () => {
 
                 // 1. Update product fields
                 await api.products.update(productId, {
-                    name: form.name, description: form.description || null,
+                    name: form.name,
+                    description: form.description || null,
                     sku: form.sku || null,
-                    category_id: form.category_id, brand_id: form.brand_id || null,
-                    arabic: form.arabic || null, hebrew: form.hebrew || null,
+                    category_id: form.category_id,
+                    brand_id: form.brand_id !== '' ? form.brand_id : null,
+                    arabic: form.arabic || null,
+                    hebrew: form.hebrew || null,
                     arabic_description: form.arabic_description || null,
                     hebrew_description: form.hebrew_description || null,
                 });
@@ -348,10 +351,13 @@ export const AdminProducts: React.FC = () => {
                 }
             } else {
                 const res = await api.products.create({
-                    name: form.name, description: form.description || null,
+                    name: form.name,
+                    description: form.description || null,
                     sku: form.sku || null,
-                    category_id: form.category_id, brand_id: form.brand_id || null,
-                    arabic: form.arabic || null, hebrew: form.hebrew || null,
+                    category_id: form.category_id,
+                    brand_id: form.brand_id !== '' ? form.brand_id : null,
+                    arabic: form.arabic || null,
+                    hebrew: form.hebrew || null,
                     arabic_description: form.arabic_description || null,
                     hebrew_description: form.hebrew_description || null,
                 });

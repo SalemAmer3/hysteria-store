@@ -184,16 +184,15 @@ export class ProductController {
             const updatedProduct = await prisma.product.update({
                 where: { id },
                 data: {
-                    name: body.name ?? product.name,
-                    sku: body.sku !== undefined ? body.sku : (product as any).sku,
-                    description: body.description !== undefined ? body.description : product.description,
-                    category_id: body.category_id ?? product.category_id,
-                    // Use !== undefined so that explicitly sending null clears the brand
-                    brand_id: body.brand_id !== undefined ? body.brand_id : product.brand_id,
-                    arabic: body.arabic !== undefined ? body.arabic : product.arabic,
-                    hebrew: body.hebrew !== undefined ? body.hebrew : product.hebrew,
-                    arabic_description: body.arabic_description !== undefined ? body.arabic_description : (product as any).arabic_description,
-                    hebrew_description: body.hebrew_description !== undefined ? body.hebrew_description : (product as any).hebrew_description,
+                    name:                body.name             !== undefined ? body.name             : product.name,
+                    sku:                 body.sku              !== undefined ? body.sku              : (product as any).sku,
+                    description:         body.description      !== undefined ? body.description      : product.description,
+                    category_id:         body.category_id      !== undefined ? body.category_id      : product.category_id,
+                    brand_id:            body.brand_id         !== undefined ? body.brand_id         : product.brand_id,
+                    arabic:              body.arabic           !== undefined ? body.arabic           : product.arabic,
+                    hebrew:              body.hebrew           !== undefined ? body.hebrew           : product.hebrew,
+                    arabic_description:  body.arabic_description  !== undefined ? body.arabic_description  : (product as any).arabic_description,
+                    hebrew_description:  body.hebrew_description  !== undefined ? body.hebrew_description  : (product as any).hebrew_description,
                 },
             });
             res.status(200).json({ success: true, data: updatedProduct });
