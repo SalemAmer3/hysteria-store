@@ -99,7 +99,7 @@ export const SearchWithAutocomplete: React.FC<SearchWithAutocompleteProps> = ({
     };
 
     const handleProductClick = (productId: string) => {
-        navigate(`/product/${productId}`);
+        navigate(`/products/${productId}`);
         setShowDropdown(false);
         setSearchQuery('');
         if (onSubmit) onSubmit();
