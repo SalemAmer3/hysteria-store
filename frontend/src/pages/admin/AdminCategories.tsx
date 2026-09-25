@@ -33,7 +33,7 @@ function getCategoryPath(catId: string, allCats: any[]): string {
     const parts: string[] = [];
     let current = map[catId];
     while (current) {
-        parts.unshift(current.name);
+        parts.unshift(current.arabic || current.name);
         current = current.parent_id ? map[current.parent_id] : null;
     }
     return parts.join(' › ');
@@ -179,7 +179,7 @@ export const AdminCategories: React.FC = () => {
                                             : <FolderOpen size={18} className="text-zinc-700 m-auto mt-3" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-zinc-200 font-semibold text-sm truncate">{cat.name}</p>
+                                        <p className="text-zinc-200 font-semibold text-sm truncate">{cat.arabic || cat.name}</p>
                                         {breadcrumb && (
                                             <p className="text-[10px] text-zinc-600 truncate mt-0.5">{breadcrumb}</p>
                                         )}
@@ -232,7 +232,7 @@ export const AdminCategories: React.FC = () => {
                                         <option value="">— {direction === 'rtl' ? 'بدون قسم رئيسي (أعلى مستوى)' : 'None (Top Level)'} —</option>
                                         {parentOptions.map(({ cat, depth }) => (
                                             <option key={cat.id} value={cat.id}>
-                                                {'\u00A0\u00A0'.repeat(depth * 2)}{depth > 0 ? '↳ ' : ''}{cat.name}
+                                                {'\u00A0\u00A0'.repeat(depth * 2)}{depth > 0 ? '↳ ' : ''}{cat.arabic || cat.name}
                                             </option>
                                         ))}
                                     </select>

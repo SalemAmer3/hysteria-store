@@ -445,7 +445,7 @@ export const AdminProducts: React.FC = () => {
                                     )}
                                     <div className="flex flex-wrap gap-2 mt-1">
                                         <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">
-                                            {prod.category?.name || '—'}
+                                            {prod.category?.arabic || prod.category?.name || '—'}
                                         </span>
                                         <span className="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-850">
                                             {prod.brand?.name || '—'}
@@ -556,14 +556,22 @@ export const AdminProducts: React.FC = () => {
                                             <select required value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
                                                 className="admin-input">
                                                 <option value="">—</option>
-                                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                {categories.map(c => (
+                                                    <option key={c.id} value={c.id}>
+                                                        {c.arabic || c.name}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </FormField>
                                         <FormField label={`${t('brandSelect')} (${t('optional')})`}>
                                             <select value={form.brand_id} onChange={e => setForm(f => ({ ...f, brand_id: e.target.value }))}
                                                 className="admin-input">
                                                 <option value="">— {t('optional')} —</option>
-                                                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                                {brands.map(b => (
+                                                    <option key={b.id} value={b.id}>
+                                                        {b.name}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </FormField>
                                     </div>
