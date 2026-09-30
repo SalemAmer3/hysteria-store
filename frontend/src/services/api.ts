@@ -38,8 +38,8 @@ async function request(url: string, options: RequestOptions = {}) {
         if (hadToken) {
             localStorage.removeItem('histeria_admin_token');
             localStorage.removeItem('histeria_admin_username');
-            if (window.location.pathname.startsWith('/admin')) {
-                window.location.href = '/admin-login?expired=true';
+            if (window.location.pathname.startsWith('/ameer')) {
+                window.location.href = '/ameer-login?expired=true';
             }
         }
     }

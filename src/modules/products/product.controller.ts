@@ -160,7 +160,10 @@ export class ProductController {
                     { hebrew:             { contains: normalizedQuery, mode: 'insensitive' } },
                 );
                 
-                where.OR = searchConditions;
+                // Combine with existing filters (category, brand) using AND
+                where.AND = [
+                    { OR: searchConditions },
+                ];
                 
                 // Step 2: Fetch all matching products (without pagination first)
                 const allProducts = await prisma.product.findMany({

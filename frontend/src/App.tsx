@@ -88,17 +88,17 @@ function App() {
                 <Route path="/wishlist"   element={<StoreLayout><WishlistPage /></StoreLayout>} />
 
                 {/* Auth */}
-                <Route path="/admin-login" element={<AdminLogin />} />
+                <Route path="/ameer-login" element={<AdminLogin />} />
 
                 {/* Admin panel routes — no transition wrapper needed */}
-                <Route path="/admin"              element={<AdminDashboard />} />
-                <Route path="/admin/products"     element={<AdminProducts />} />
-                <Route path="/admin/categories"   element={<AdminCategories />} />
-                <Route path="/admin/brands"       element={<AdminBrands />} />
-                <Route path="/admin/sliders"      element={<AdminSliders />} />
-                <Route path="/admin/ads"          element={<AdminAds />} />
-                <Route path="/admin/coupons"      element={<AdminCoupons />} />
-                <Route path="/admin/ticker"       element={<AdminTicker />} />
+                <Route path="/ameer"              element={<AdminDashboard />} />
+                <Route path="/ameer/products"     element={<AdminProducts />} />
+                <Route path="/ameer/categories"   element={<AdminCategories />} />
+                <Route path="/ameer/brands"       element={<AdminBrands />} />
+                <Route path="/ameer/sliders"      element={<AdminSliders />} />
+                <Route path="/ameer/ads"          element={<AdminAds />} />
+                <Route path="/ameer/coupons"      element={<AdminCoupons />} />
+                <Route path="/ameer/ticker"       element={<AdminTicker />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,7 +9,11 @@ const adSchema = z.object({
     description: z.string().nullable().optional(),
     display_order: z.preprocess((val) => (val === undefined || val === '' || val === null ? 0 : Number(val)), z.number().int().default(0)),
     image_url: z.string().url('image_url must be a valid URL'),
-    is_active: z.boolean().default(true),
+    is_active: z.preprocess((val) => {
+        if (val === 'true' || val === true) return true;
+        if (val === 'false' || val === false) return false;
+        return true; // default
+    }, z.boolean().default(true)),
     arabic: z.string().nullable().optional(),
     hebrew: z.string().nullable().optional(),
 });

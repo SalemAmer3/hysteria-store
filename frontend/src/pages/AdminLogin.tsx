@@ -19,7 +19,7 @@ export const AdminLogin: React.FC = () => {
     // Authenticate guard
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/admin');
+            navigate('/ameer');
         }
     }, [isAuthenticated, navigate]);
 
@@ -44,7 +44,7 @@ export const AdminLogin: React.FC = () => {
 
             if (res.success && res.data.token) {
                 login(res.data.token, usernameInput);
-                navigate('/admin');
+                navigate('/ameer');
             } else {
                 setErrorMsg(t('invalidCoupon'));
             }

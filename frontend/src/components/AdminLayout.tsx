@@ -31,7 +31,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     // Authenticate guard
     useEffect(() => {
         if (!isAuthenticated) {
-            navigate('/admin-login');
+            navigate('/ameer-login');
         }
     }, [isAuthenticated, navigate]);
 
@@ -44,14 +44,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
 
     const menuItems = [
-        { name: t('dashboard'), path: '/admin', icon: LayoutDashboard },
-        { name: t('productsManage'), path: '/admin/products', icon: ShoppingBag },
-        { name: t('categoriesManage'), path: '/admin/categories', icon: FolderOpen },
-        { name: t('brandsManage'), path: '/admin/brands', icon: Sparkles },
-        { name: t('slidersManage'), path: '/admin/sliders', icon: SlidersIcon },
-        { name: t('adsManage'), path: '/admin/ads', icon: Megaphone },
-        { name: direction === 'rtl' ? 'الشريط المتحرك' : 'Ticker', path: '/admin/ticker', icon: ScrollText },
-        { name: t('couponsManage'), path: '/admin/coupons', icon: Ticket },
+        { name: t('dashboard'), path: '/ameer', icon: LayoutDashboard },
+        { name: t('productsManage'), path: '/ameer/products', icon: ShoppingBag },
+        { name: t('categoriesManage'), path: '/ameer/categories', icon: FolderOpen },
+        { name: t('brandsManage'), path: '/ameer/brands', icon: Sparkles },
+        { name: t('slidersManage'), path: '/ameer/sliders', icon: SlidersIcon },
+        { name: t('adsManage'), path: '/ameer/ads', icon: Megaphone },
+        { name: direction === 'rtl' ? 'الشريط المتحرك' : 'Ticker', path: '/ameer/ticker', icon: ScrollText },
+        { name: t('couponsManage'), path: '/ameer/coupons', icon: Ticket },
     ];
 
     return (
