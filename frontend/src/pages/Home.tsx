@@ -96,31 +96,40 @@ export const Home: React.FC = () => {
             {/* ── 2. Promo ads ── */}
             {ads.length > 0 && (
                 <section ref={adsRef} className="reveal px-4 md:px-8 max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         {ads.slice(0, 2).map((ad, i) => (
                             <div
                                 key={ad.id}
-                                className="group relative h-[180px] md:h-[220px] rounded-3xl overflow-hidden border border-zinc-900 shadow-2xl bg-zinc-950 flex items-center p-8 md:p-12"
+                                className="group relative h-[160px] md:h-[220px] rounded-2xl md:rounded-3xl overflow-hidden border border-zinc-900 shadow-2xl bg-zinc-950 flex items-center p-6 md:p-12"
                                 style={{ transitionDelay: `${i * 120}ms` }}
                             >
-                                <div
-                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-60"
-                                    style={{ backgroundImage: `url('${ad.image_url}')` }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
-                                <div className="relative z-10 max-w-xs space-y-2.5">
-                                    <span className="text-[10px] uppercase font-bold tracking-widest text-gold-400">
-                                        Exclusive Promo
+                                {/* Background Image with fallback */}
+                                {ad.image_url ? (
+                                    <>
+                                        <div
+                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-60"
+                                            style={{ backgroundImage: `url('${ad.image_url}')` }}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+                                    </>
+                                ) : (
+                                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+                                )}
+                                
+                                <div className="relative z-10 max-w-xs space-y-2 md:space-y-2.5">
+                                    <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-widest text-gold-400">
+                                        {direction === 'rtl' ? 'عرض خاص' : 'Exclusive Promo'}
                                     </span>
-                                    <h3 className="text-lg md:text-xl font-bold text-white leading-snug line-clamp-2">
-                                        {getLocalized(ad, 'description') || 'Discover New Offerings'}
+                                    <h3 className="text-base md:text-xl font-bold text-white leading-snug line-clamp-2 md:line-clamp-3">
+                                        {getLocalized(ad, 'description') || (direction === 'rtl' ? 'اكتشف عروضنا الجديدة' : 'Discover New Offerings')}
                                     </h3>
                                     <Link
                                         to="/products?category=all"
-                                        className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-300 hover:text-gold-400 transition-colors uppercase tracking-wider"
+                                        className="inline-flex items-center gap-1 text-[10px] md:text-xs font-semibold text-zinc-300 hover:text-gold-400 transition-colors uppercase tracking-wider"
                                     >
-                                        <span>{direction === 'rtl' ? 'تسوق الان' : 'Shop Now'}</span>
-                                        <ArrowUpRight size={14} />
+                                        <span>{direction === 'rtl' ? 'تسوق الآن' : 'Shop Now'}</span>
+                                        <ArrowUpRight size={12} className="md:hidden" />
+                                        <ArrowUpRight size={14} className="hidden md:block" />
                                     </Link>
                                 </div>
                             </div>

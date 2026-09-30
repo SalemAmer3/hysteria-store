@@ -163,24 +163,24 @@ export const SearchWithAutocomplete: React.FC<SearchWithAutocompleteProps> = ({
             {/* Autocomplete Dropdown */}
             {showDropdown && hasResults && (
                 <div
-                    className={`absolute top-full mt-2 w-full bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[500px] overflow-y-auto ${
+                    className={`absolute top-full mt-2 w-full bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[70vh] md:max-h-[500px] overflow-y-auto ${
                         direction === 'rtl' ? 'text-right' : 'text-left'
                     }`}
                 >
                     {/* Suggestions */}
                     {autocompleteData.suggestions.length > 0 && (
                         <div className="border-b border-zinc-900">
-                            <div className="px-4 py-2 text-xs text-zinc-500 font-semibold">
+                            <div className="px-3 md:px-4 py-2 text-[10px] md:text-xs text-zinc-500 font-semibold">
                                 {t('suggestions') || 'اقتراحات البحث'}
                             </div>
                             {autocompleteData.suggestions.map((suggestion, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleSuggestionClick(suggestion)}
-                                    className="w-full px-4 py-2.5 hover:bg-zinc-900 cursor-pointer text-sm text-zinc-200 flex items-center gap-2 transition-colors"
+                                    className="w-full px-3 md:px-4 py-2 md:py-2.5 hover:bg-zinc-900 cursor-pointer text-xs md:text-sm text-zinc-200 flex items-center gap-2 transition-colors"
                                 >
-                                    <Search size={14} className="text-zinc-500 flex-shrink-0" />
-                                    <span>{suggestion}</span>
+                                    <Search size={13} className="text-zinc-500 flex-shrink-0 md:w-[14px] md:h-[14px]" />
+                                    <span className="line-clamp-1">{suggestion}</span>
                                 </button>
                             ))}
                         </div>
@@ -189,38 +189,38 @@ export const SearchWithAutocomplete: React.FC<SearchWithAutocompleteProps> = ({
                     {/* Products */}
                     {autocompleteData.products.length > 0 && (
                         <div>
-                            <div className="px-4 py-2 text-xs text-zinc-500 font-semibold">
+                            <div className="px-3 md:px-4 py-2 text-[10px] md:text-xs text-zinc-500 font-semibold">
                                 {t('products') || 'منتجات'}
                             </div>
                             {autocompleteData.products.map((product) => (
                                 <button
                                     key={product.id}
                                     onClick={() => handleProductClick(product.id)}
-                                    className="w-full px-4 py-3 hover:bg-zinc-900 cursor-pointer flex items-center gap-3 transition-colors"
+                                    className="w-full px-3 md:px-4 py-2.5 md:py-3 hover:bg-zinc-900 cursor-pointer flex items-center gap-2 md:gap-3 transition-colors"
                                 >
                                     {product.image ? (
                                         <img
                                             src={product.image}
                                             alt={product.name}
-                                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0 bg-zinc-800"
+                                            className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-lg flex-shrink-0 bg-zinc-800"
                                         />
                                     ) : (
-                                        <div className="w-12 h-12 bg-zinc-800 rounded-lg flex-shrink-0 flex items-center justify-center text-zinc-600">
-                                            <Search size={20} />
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-800 rounded-lg flex-shrink-0 flex items-center justify-center text-zinc-600">
+                                            <Search size={16} className="md:w-[20px] md:h-[20px]" />
                                         </div>
                                     )}
-                                    <div className="flex-1 text-left min-w-0">
-                                        <div className="text-sm text-zinc-200 truncate">
+                                    <div className="flex-1 text-left min-w-0" dir={direction === 'rtl' ? 'rtl' : 'ltr'}>
+                                        <div className="text-xs md:text-sm text-zinc-200 line-clamp-2">
                                             {product.name}
                                         </div>
                                         {product.category && (
-                                            <div className="text-xs text-zinc-500 truncate">
+                                            <div className="text-[10px] md:text-xs text-zinc-500 truncate mt-0.5">
                                                 {product.category}
                                             </div>
                                         )}
                                     </div>
                                     {product.price && (
-                                        <div className="text-sm text-gold-400 font-semibold flex-shrink-0">
+                                        <div className="text-xs md:text-sm text-gold-400 font-semibold flex-shrink-0">
                                             ₪{product.price}
                                         </div>
                                     )}
@@ -233,9 +233,9 @@ export const SearchWithAutocomplete: React.FC<SearchWithAutocompleteProps> = ({
 
             {/* Loading state */}
             {isLoading && showDropdown && (
-                <div className="absolute top-full mt-2 w-full bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-4 z-50">
-                    <div className="flex items-center justify-center gap-2 text-zinc-500 text-sm">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gold-400"></div>
+                <div className="absolute top-full mt-2 w-full bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-3 md:p-4 z-50">
+                    <div className="flex items-center justify-center gap-2 text-zinc-500 text-xs md:text-sm">
+                        <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-gold-400"></div>
                         <span>{t('searching') || 'جاري البحث...'}</span>
                     </div>
                 </div>
