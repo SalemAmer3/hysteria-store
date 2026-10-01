@@ -663,3 +663,37 @@ body.light .shimmer {
   background-color: #0d0d11;
   color: #e4e4e7;
 }
+
+/* ── Sidebar Scrollbar ── */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(13, 13, 17, 0.5);
+  border-radius: 10px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 10px;
+  border: 2px solid rgba(13, 13, 17, 0.5);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Light mode sidebar scrollbar */
+body.light .sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(242, 237, 232, 0.5);
+}
+
+body.light .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #c8bdb6;
+  border: 2px solid rgba(242, 237, 232, 0.5);
+}
+
+body.light .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #b8a99a;
+}

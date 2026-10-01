@@ -218,7 +218,7 @@ export const CategoryListing: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-10 items-start">
 
                 {/* ── Desktop Sidebar ── */}
-                <aside className="w-full md:w-64 flex-shrink-0 space-y-6 bg-[#0d0d11]/25 border border-zinc-900/60 p-5 rounded-2xl sticky top-28 hidden md:block">
+                <aside className="w-full md:w-64 flex-shrink-0 space-y-6 bg-[#0d0d11]/25 border border-zinc-900/60 p-5 rounded-2xl sticky top-28 hidden md:block max-h-[calc(100vh-8rem)] overflow-y-auto sidebar-scroll">
 
                     <div className="flex items-center gap-2 text-zinc-300 font-extrabold uppercase text-xs tracking-widest pb-3 border-b border-zinc-900">
                         <SlidersHorizontal size={14} className="text-gold-400" />
@@ -233,7 +233,7 @@ export const CategoryListing: React.FC = () => {
                     {/* Brands */}
                     <div className="space-y-2 pt-4 border-t border-zinc-900/80">
                         <h4 className="text-zinc-400 font-bold text-xs uppercase tracking-wider">{t('filterByBrand')}</h4>
-                        <div className="flex flex-col gap-0.5 max-h-[200px] overflow-y-auto scrollbar-thin">
+                        <div className="flex flex-col gap-0.5">
                             <button
                                 onClick={() => handleBrandClick('all')}
                                 className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left ${
