@@ -49,12 +49,12 @@ export const AdminDashboard: React.FC = () => {
     }, []);
 
     const statCards: StatCard[] = [
-        { title: t('productsManage'), value: stats.products, icon: <ShoppingBag size={22} />, color: 'gold', path: '/admin/products' },
-        { title: t('categoriesManage'), value: stats.categories, icon: <FolderOpen size={22} />, color: 'blue', path: '/admin/categories' },
-        { title: t('brandsManage'), value: stats.brands, icon: <Sparkles size={22} />, color: 'purple', path: '/admin/brands' },
-        { title: t('slidersManage'), value: stats.sliders, icon: <Sliders size={22} />, color: 'cyan', path: '/admin/sliders' },
-        { title: t('adsManage'), value: stats.ads, icon: <Megaphone size={22} />, color: 'rose', path: '/admin/ads' },
-        { title: t('couponsManage'), value: stats.coupons, icon: <Ticket size={22} />, color: 'emerald', path: '/admin/coupons' },
+        { title: t('productsManage'), value: stats.products, icon: <ShoppingBag size={22} />, color: 'gold', path: '/ameer/products' },
+        { title: t('categoriesManage'), value: stats.categories, icon: <FolderOpen size={22} />, color: 'blue', path: '/ameer/categories' },
+        { title: t('brandsManage'), value: stats.brands, icon: <Sparkles size={22} />, color: 'purple', path: '/ameer/brands' },
+        { title: t('slidersManage'), value: stats.sliders, icon: <Sliders size={22} />, color: 'cyan', path: '/ameer/sliders' },
+        { title: t('adsManage'), value: stats.ads, icon: <Megaphone size={22} />, color: 'rose', path: '/ameer/ads' },
+        { title: t('couponsManage'), value: stats.coupons, icon: <Ticket size={22} />, color: 'emerald', path: '/ameer/coupons' },
     ];
 
     const colorMap: Record<string, string> = {
@@ -113,11 +113,11 @@ export const AdminDashboard: React.FC = () => {
                         {direction === 'rtl' ? 'روابط سريعة' : 'Quick Actions'}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Link to="/admin/products" className="flex items-center gap-3 px-5 py-3.5 bg-gold-400 hover:bg-gold-500 text-black rounded-xl text-xs font-extrabold transition-all hover:scale-105 cursor-pointer tracking-wider">
+                        <Link to="/ameer/products" className="flex items-center gap-3 px-5 py-3.5 bg-gold-400 hover:bg-gold-500 text-black rounded-xl text-xs font-extrabold transition-all hover:scale-105 cursor-pointer tracking-wider">
                             <ShoppingBag size={16} />
                             {direction === 'rtl' ? '+ إضافة منتج جديد' : '+ Add New Product'}
                         </Link>
-                        <Link to="/admin/categories" className="flex items-center gap-3 px-5 py-3.5 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 border border-zinc-800 hover:text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer tracking-wider">
+                        <Link to="/ameer/categories" className="flex items-center gap-3 px-5 py-3.5 bg-zinc-900 hover:bg-zinc-850 text-zinc-200 border border-zinc-800 hover:text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer tracking-wider">
                             <FolderOpen size={16} />
                             {direction === 'rtl' ? '+ إضافة فئة' : '+ Add Category'}
                         </Link>
