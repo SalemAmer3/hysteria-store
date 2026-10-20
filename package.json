@@ -10,6 +10,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts",
+    "generate-sitemap": "node generate-sitemap.js",
     "test": "jest --runInBand --detectOpenHandles"
   },
   "prisma": {

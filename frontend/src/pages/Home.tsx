@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { Slider } from '../components/Slider';
 import { ProductCard } from '../components/ProductCard';
 import { CategoryTree } from '../components/CategoryTree';
+import { SEO } from '../components/SEO';
 import { useScrollReveal, useScrollRevealChildren, useGoldDivider } from '../hooks/useScrollReveal';
 import { ArrowRight, ArrowLeft, ArrowUpRight } from 'lucide-react';
 
@@ -88,6 +89,9 @@ export const Home: React.FC = () => {
 
     return (
         <div className="space-y-16 pb-20 select-none">
+            
+            {/* SEO Meta Tags */}
+            <SEO />
 
             {/* ── 1. Hero ── */}
             <section className="px-4 md:px-8 mt-4">

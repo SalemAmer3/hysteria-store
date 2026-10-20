@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { Heart, ShoppingBag, ArrowLeft, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { parseSizeLabel } from '../utils/sizeLabel';
+import { SEO } from '../components/SEO';
 
 export const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -190,6 +191,16 @@ export const ProductDetail: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24 select-none font-sans" dir={direction}>
+            
+            {/* SEO Meta Tags */}
+            <SEO
+                title={name}
+                description={details || `${name} - ${brandName} ${categoryName}`}
+                keywords={`${name}, ${brandName}, ${categoryName}, عطور, مستحضرات تجميل, هستيريا`}
+                image={activeImage}
+                type="product"
+                price={selectedOption?.price || 0}
+            />
 
             {/* Back button link */}
             <div className="py-4 mb-4">

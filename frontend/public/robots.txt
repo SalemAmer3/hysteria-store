@@ -1,0 +1,19 @@
+# Histeria Store - Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /ameer/
+Disallow: /ameer-login
+
+# Disallow cart and checkout (no need to index these)
+Disallow: /cart
+Disallow: /checkout
+
+# Sitemap location
+Sitemap: https://hysteria.store/sitemap.xml
+
+# Crawl-delay (optional, in seconds)
+Crawl-delay: 1
