@@ -4,29 +4,29 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://hysteria.store/</loc>
+    <loc>https://hysteriaps.online/</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/?lang=he" />
   </url>
   
   <!-- Products Listing Page -->
   <url>
-    <loc>https://hysteria.store/products</loc>
+    <loc>https://hysteriaps.online/products</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products?lang=he" />
   </url>
   
   <!-- Wishlist -->
   <url>
-    <loc>https://hysteria.store/wishlist</loc>
+    <loc>https://hysteriaps.online/wishlist</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -34,84 +34,84 @@
   
   <!-- Product: 5b7098ae-b2f5-478e-95d3-bd01a8f97ca6 -->
   <url>
-    <loc>https://hysteria.store/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6</loc>
+    <loc>https://hysteriaps.online/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/5b7098ae-b2f5-478e-95d3-bd01a8f97ca6?lang=he" />
   </url>
   
   <!-- Product: 6724f9be-d9f8-489c-8ed6-1df5e549cffb -->
   <url>
-    <loc>https://hysteria.store/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb</loc>
+    <loc>https://hysteriaps.online/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb</loc>
     <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/6724f9be-d9f8-489c-8ed6-1df5e549cffb?lang=he" />
   </url>
   
   <!-- Product: 8253b797-7495-4c51-8538-b0afe8a53f04 -->
   <url>
-    <loc>https://hysteria.store/products/8253b797-7495-4c51-8538-b0afe8a53f04</loc>
+    <loc>https://hysteriaps.online/products/8253b797-7495-4c51-8538-b0afe8a53f04</loc>
     <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/8253b797-7495-4c51-8538-b0afe8a53f04?lang=he" />
   </url>
   
   <!-- Product: 71c356ab-ce38-4945-9b47-09b60f886a14 -->
   <url>
-    <loc>https://hysteria.store/products/71c356ab-ce38-4945-9b47-09b60f886a14</loc>
+    <loc>https://hysteriaps.online/products/71c356ab-ce38-4945-9b47-09b60f886a14</loc>
     <lastmod>2026-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/71c356ab-ce38-4945-9b47-09b60f886a14?lang=he" />
   </url>
   
   <!-- Product: c3516b3c-9ce8-489c-ada4-b621ef93d01b -->
   <url>
-    <loc>https://hysteria.store/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b</loc>
+    <loc>https://hysteriaps.online/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b</loc>
     <lastmod>2026-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/c3516b3c-9ce8-489c-ada4-b621ef93d01b?lang=he" />
   </url>
   
   <!-- Product: 896745cc-13f8-49af-9716-d2224a24026c -->
   <url>
-    <loc>https://hysteria.store/products/896745cc-13f8-49af-9716-d2224a24026c</loc>
+    <loc>https://hysteriaps.online/products/896745cc-13f8-49af-9716-d2224a24026c</loc>
     <lastmod>2026-08-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/896745cc-13f8-49af-9716-d2224a24026c?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/896745cc-13f8-49af-9716-d2224a24026c?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/896745cc-13f8-49af-9716-d2224a24026c?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/896745cc-13f8-49af-9716-d2224a24026c?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/896745cc-13f8-49af-9716-d2224a24026c?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/896745cc-13f8-49af-9716-d2224a24026c?lang=he" />
   </url>
   
   <!-- Product: 9baefa2e-f8ba-49be-972b-964b9619f2cd -->
   <url>
-    <loc>https://hysteria.store/products/9baefa2e-f8ba-49be-972b-964b9619f2cd</loc>
+    <loc>https://hysteriaps.online/products/9baefa2e-f8ba-49be-972b-964b9619f2cd</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteria.store/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://hysteria.store/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=en" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://hysteria.store/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=he" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://hysteriaps.online/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=ar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hysteriaps.online/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=en" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://hysteriaps.online/products/9baefa2e-f8ba-49be-972b-964b9619f2cd?lang=he" />
   </url>
   
   <!-- Category: 083c902d-79e8-4e7b-8d38-d711eea71702 -->
   <url>
-    <loc>https://hysteria.store/products?category=083c902d-79e8-4e7b-8d38-d711eea71702</loc>
+    <loc>https://hysteriaps.online/products?category=083c902d-79e8-4e7b-8d38-d711eea71702</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -119,7 +119,7 @@
   
   <!-- Category: c33d0ff5-c239-494b-9c3c-adf919c81c3c -->
   <url>
-    <loc>https://hysteria.store/products?category=c33d0ff5-c239-494b-9c3c-adf919c81c3c</loc>
+    <loc>https://hysteriaps.online/products?category=c33d0ff5-c239-494b-9c3c-adf919c81c3c</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -127,7 +127,7 @@
   
   <!-- Category: 6aa0eb5e-0751-4018-a5cb-af948cf0909b -->
   <url>
-    <loc>https://hysteria.store/products?category=6aa0eb5e-0751-4018-a5cb-af948cf0909b</loc>
+    <loc>https://hysteriaps.online/products?category=6aa0eb5e-0751-4018-a5cb-af948cf0909b</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -135,7 +135,7 @@
   
   <!-- Category: 14615791-8568-4170-900b-4fd9b1daadbd -->
   <url>
-    <loc>https://hysteria.store/products?category=14615791-8568-4170-900b-4fd9b1daadbd</loc>
+    <loc>https://hysteriaps.online/products?category=14615791-8568-4170-900b-4fd9b1daadbd</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -143,7 +143,7 @@
   
   <!-- Category: d6907783-e03c-42fa-b848-33da75ab5c03 -->
   <url>
-    <loc>https://hysteria.store/products?category=d6907783-e03c-42fa-b848-33da75ab5c03</loc>
+    <loc>https://hysteriaps.online/products?category=d6907783-e03c-42fa-b848-33da75ab5c03</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -151,7 +151,7 @@
   
   <!-- Category: 3ff15596-2183-4f9c-8c2e-0421e569bdb7 -->
   <url>
-    <loc>https://hysteria.store/products?category=3ff15596-2183-4f9c-8c2e-0421e569bdb7</loc>
+    <loc>https://hysteriaps.online/products?category=3ff15596-2183-4f9c-8c2e-0421e569bdb7</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -159,7 +159,7 @@
   
   <!-- Category: 5f6d955e-92c2-4cd5-936f-c91aa024d5a9 -->
   <url>
-    <loc>https://hysteria.store/products?category=5f6d955e-92c2-4cd5-936f-c91aa024d5a9</loc>
+    <loc>https://hysteriaps.online/products?category=5f6d955e-92c2-4cd5-936f-c91aa024d5a9</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -167,7 +167,7 @@
   
   <!-- Category: 68b1933d-c626-4b3a-9011-d24275720a0b -->
   <url>
-    <loc>https://hysteria.store/products?category=68b1933d-c626-4b3a-9011-d24275720a0b</loc>
+    <loc>https://hysteriaps.online/products?category=68b1933d-c626-4b3a-9011-d24275720a0b</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -175,7 +175,7 @@
   
   <!-- Category: da8c3551-3819-422a-9898-d6309eb913c6 -->
   <url>
-    <loc>https://hysteria.store/products?category=da8c3551-3819-422a-9898-d6309eb913c6</loc>
+    <loc>https://hysteriaps.online/products?category=da8c3551-3819-422a-9898-d6309eb913c6</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -183,7 +183,7 @@
   
   <!-- Category: 84cc3973-ec83-4f06-bfdc-c3616599167b -->
   <url>
-    <loc>https://hysteria.store/products?category=84cc3973-ec83-4f06-bfdc-c3616599167b</loc>
+    <loc>https://hysteriaps.online/products?category=84cc3973-ec83-4f06-bfdc-c3616599167b</loc>
     <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -191,7 +191,7 @@
   
   <!-- Category: 809740f8-9401-4795-a5d9-0ff7c22b4278 -->
   <url>
-    <loc>https://hysteria.store/products?category=809740f8-9401-4795-a5d9-0ff7c22b4278</loc>
+    <loc>https://hysteriaps.online/products?category=809740f8-9401-4795-a5d9-0ff7c22b4278</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -199,7 +199,7 @@
   
   <!-- Category: b06c00e4-d736-4d02-9762-9f76a6f6b7bf -->
   <url>
-    <loc>https://hysteria.store/products?category=b06c00e4-d736-4d02-9762-9f76a6f6b7bf</loc>
+    <loc>https://hysteriaps.online/products?category=b06c00e4-d736-4d02-9762-9f76a6f6b7bf</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -207,7 +207,7 @@
   
   <!-- Category: 4327c6b3-377f-49ef-bf88-d4f21df5891b -->
   <url>
-    <loc>https://hysteria.store/products?category=4327c6b3-377f-49ef-bf88-d4f21df5891b</loc>
+    <loc>https://hysteriaps.online/products?category=4327c6b3-377f-49ef-bf88-d4f21df5891b</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -215,7 +215,7 @@
   
   <!-- Category: 58940555-1bba-4508-87cc-fc7870a3bb59 -->
   <url>
-    <loc>https://hysteria.store/products?category=58940555-1bba-4508-87cc-fc7870a3bb59</loc>
+    <loc>https://hysteriaps.online/products?category=58940555-1bba-4508-87cc-fc7870a3bb59</loc>
     <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

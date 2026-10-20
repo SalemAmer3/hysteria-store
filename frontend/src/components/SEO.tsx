@@ -15,13 +15,13 @@ export const SEO: React.FC<SEOProps> = ({
     title,
     description,
     keywords,
-    image = 'https://hysteria.store/hysteria-logo.jpeg',
+    image = 'https://hysteriaps.online/hysteria-logo.jpeg',
     type = 'website',
     price,
     currency = 'ILS',
 }) => {
     const location = useLocation();
-    const baseUrl = 'https://hysteria.store';
+    const baseUrl = 'https://hysteriaps.online';
     const url = `${baseUrl}${location.pathname}${location.search}`;
 
     // Default values

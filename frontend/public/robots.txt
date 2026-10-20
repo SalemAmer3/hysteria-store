@@ -13,7 +13,7 @@ Disallow: /cart
 Disallow: /checkout
 
 # Sitemap location
-Sitemap: https://hysteria.store/sitemap.xml
+Sitemap: https://hysteriaps.online/sitemap.xml
 
 # Crawl-delay (optional, in seconds)
 Crawl-delay: 1
