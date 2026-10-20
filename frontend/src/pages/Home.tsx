@@ -54,6 +54,7 @@ export const Home: React.FC = () => {
     const [ads,        setAds]        = useState<any[]>([]);
     const [loading,    setLoading]    = useState(true);
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
+    const [showAllCategories, setShowAllCategories] = useState(false);
 
     // ── Scroll-reveal refs ────────────────────────────────────────────────────
     const adsRef      = useScrollReveal<HTMLElement>(0.1);
@@ -94,46 +95,53 @@ export const Home: React.FC = () => {
             </section>
 
             {/* ── 2. Promo ads ── */}
-            {ads.length > 0 && (
+            {!loading && ads.length > 0 && (
                 <section ref={adsRef} className="reveal px-4 md:px-8 max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                        {ads.slice(0, 2).map((ad, i) => (
-                            <div
-                                key={ad.id}
-                                className="group relative h-[160px] md:h-[220px] rounded-2xl md:rounded-3xl overflow-hidden border border-zinc-900 shadow-2xl bg-zinc-950 flex items-center p-6 md:p-12"
-                                style={{ transitionDelay: `${i * 120}ms` }}
-                            >
-                                {/* Background Image with fallback */}
-                                {ad.image_url ? (
-                                    <>
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-60"
-                                            style={{ backgroundImage: `url('${ad.image_url}')` }}
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
-                                    </>
-                                ) : (
-                                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
-                                )}
-                                
-                                <div className="relative z-10 max-w-xs space-y-2 md:space-y-2.5">
-                                    <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-widest text-gold-400">
-                                        {direction === 'rtl' ? 'عرض خاص' : 'Exclusive Promo'}
-                                    </span>
-                                    <h3 className="text-base md:text-xl font-bold text-white leading-snug line-clamp-2 md:line-clamp-3">
-                                        {getLocalized(ad, 'description') || (direction === 'rtl' ? 'اكتشف عروضنا الجديدة' : 'Discover New Offerings')}
-                                    </h3>
-                                    <Link
-                                        to="/products?category=all"
-                                        className="inline-flex items-center gap-1 text-[10px] md:text-xs font-semibold text-zinc-300 hover:text-gold-400 transition-colors uppercase tracking-wider"
-                                    >
-                                        <span>{direction === 'rtl' ? 'تسوق الآن' : 'Shop Now'}</span>
-                                        <ArrowUpRight size={12} className="md:hidden" />
-                                        <ArrowUpRight size={14} className="hidden md:block" />
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
+                        {ads.slice(0, 2).map((ad, i) => {
+                            const hasValidImage = ad.image_url && ad.image_url.startsWith('http');
+                            return (
+                                <Link
+                                    key={ad.id}
+                                    to="/products?category=all"
+                                    className="group relative h-[180px] md:h-[240px] rounded-2xl md:rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl flex items-center cursor-pointer"
+                                    style={{ transitionDelay: `${i * 120}ms` }}
+                                >
+                                    {/* Background Image or Gradient */}
+                                    {hasValidImage ? (
+                                        <>
+                                            <img
+                                                src={ad.image_url}
+                                                alt={getLocalized(ad, 'description') || 'Ad'}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-70"
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    // Fallback if image fails to load
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40 pointer-events-none" />
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-gold-900/20 via-zinc-900 to-black" />
+                                    )}
+                                    
+                                    <div className="relative z-10 p-6 md:p-10 max-w-md space-y-2 md:space-y-3">
+                                        <span className="inline-block text-[10px] md:text-xs uppercase font-extrabold tracking-widest text-gold-400 bg-gold-400/10 px-3 py-1 rounded-full border border-gold-400/30">
+                                            {direction === 'rtl' ? 'عرض خاص' : 'Special Offer'}
+                                        </span>
+                                        <h3 className="text-lg md:text-2xl font-extrabold text-white leading-snug">
+                                            {getLocalized(ad, 'description') || (direction === 'rtl' ? 'اكتشف عروضنا الحصرية' : 'Discover Exclusive Offers')}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-gold-400 group-hover:text-gold-300 transition-colors">
+                                            <span>{direction === 'rtl' ? 'تسوق الآن' : 'Shop Now'}</span>
+                                            <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        </div>
+                                    </div>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </section>
             )}
@@ -149,24 +157,42 @@ export const Home: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {categories.filter(c => !c.parent_id).map((cat) => (
-                            <CategoryTree
-                                key={cat.id}
-                                categories={categories.filter(c =>
-                                    c.id === cat.id || isDescendantOf(c, cat.id, categories)
-                                )}
-                                activeCategoryId={null}
-                                direction={direction}
-                                onSelect={(id) => navigate(`/products?category=${id}`)}
-                                expandedIds={expandedCats}
-                                onToggle={(id) =>
-                                    setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }))
-                                }
-                                getLocalized={getLocalized}
-                                variant="home"
-                            />
-                        ))}
+                    <div className="space-y-4">
+                        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {categories
+                                .filter(c => !c.parent_id)
+                                .slice(0, showAllCategories ? undefined : 4)
+                                .map((cat) => (
+                                    <CategoryTree
+                                        key={cat.id}
+                                        categories={categories.filter(c =>
+                                            c.id === cat.id || isDescendantOf(c, cat.id, categories)
+                                        )}
+                                        activeCategoryId={null}
+                                        direction={direction}
+                                        onSelect={(id) => navigate(`/products?category=${id}`)}
+                                        expandedIds={expandedCats}
+                                        onToggle={(id) =>
+                                            setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }))
+                                        }
+                                        getLocalized={getLocalized}
+                                        variant="home"
+                                    />
+                                ))}
+                        </div>
+                        
+                        {/* Show "View All Categories" button if more than 4 categories */}
+                        {categories.filter(c => !c.parent_id).length > 4 && !showAllCategories && (
+                            <div className="flex justify-center pt-2">
+                                <button
+                                    onClick={() => setShowAllCategories(true)}
+                                    className="flex items-center gap-2 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-gold-400/50 text-zinc-300 hover:text-gold-400 rounded-xl text-sm font-bold transition-all cursor-pointer"
+                                >
+                                    <span>{direction === 'rtl' ? 'عرض جميع الفئات' : 'View All Categories'}</span>
+                                    {direction === 'rtl' ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </section>

@@ -124,7 +124,7 @@ export const Navbar: React.FC = () => {
                                 className="flex items-center gap-1 text-zinc-300 hover:text-gold-400 py-2 cursor-pointer font-medium tracking-wide"
                             >
                                 <span className="text-base">
-                                    {language === 'ar' ? '🇸🇦' : language === 'he' ? '🇮🇱' : '🇬🇧'}
+                                    {language === 'ar' ? '🇵🇸' : language === 'he' ? '🇮🇱' : '🇬🇧'}
                                 </span>
                                 <span className="hidden md:inline text-sm">{t('languageName')}</span>
                             </button>
@@ -141,7 +141,7 @@ export const Navbar: React.FC = () => {
                                             className={`w-full text-left px-4 py-2.5 text-xs flex items-center gap-2 hover:bg-zinc-900 hover:text-white cursor-pointer ${language === 'ar' ? 'text-gold-400 font-bold' : 'text-zinc-300'}`}
                                             style={{ textAlign: direction === 'rtl' ? 'right' : 'left' }}
                                         >
-                                            <span>🇸🇦</span> <span>العربية</span>
+                                            <span>🇵🇸</span> <span>العربية</span>
                                         </button>
                                         <button
                                             onClick={() => handleLangChange('he')}

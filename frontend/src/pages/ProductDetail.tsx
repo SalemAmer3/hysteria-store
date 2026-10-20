@@ -39,7 +39,8 @@ export const ProductDetail: React.FC = () => {
 
                 // Set default selected option and color/shade/size states
                 if (prod.options && prod.options.length > 0) {
-                    const firstOpt = prod.options[0];
+                    // Prefer first option with color, fallback to any first option
+                    const firstOpt = prod.options.find((o: any) => o.color_name) || prod.options[0];
                     setSelectedOption(firstOpt);
                     setSelectedColor(firstOpt.color_name || null);
                     setSelectedShade(firstOpt.shade || null);
@@ -136,9 +137,12 @@ export const ProductDetail: React.FC = () => {
     }));
 
     // Options visible under the currently selected color (or all if no colour)
+    const optionsWithColor = options.filter((o: any) => o.color_name);
+    const optionsWithoutColor = options.filter((o: any) => !o.color_name);
+    
     const optionsForColor = selectedColor
-        ? options.filter((o: any) => o.color_name === selectedColor)
-        : options;
+        ? optionsWithColor.filter((o: any) => o.color_name === selectedColor)
+        : optionsWithColor;
 
     // Select a whole option directly (by id)
     const handleSelectOption = (opt: any) => {
@@ -438,6 +442,80 @@ export const ProductDetail: React.FC = () => {
                                                     )}
 
                                                     {/* Price */}
+                                                    <span
+                                                        className={`text-[10px] font-bold ${
+                                                            isSelected ? 'text-black/70' : 'text-gold-400'
+                                                        }`}
+                                                    >
+                                                        ₪{Number(opt.price).toFixed(0)}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ── Options WITHOUT color (size/price only) ── */}
+                            {optionsWithoutColor.length > 0 && (
+                                <div className="space-y-2.5">
+                                    <span className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider block">
+                                        {direction === 'rtl' ? 'خيارات إضافية' : 'Additional Options'}
+                                    </span>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {optionsWithoutColor.map((opt: any) => {
+                                            const isSelected = selectedOption?.id === opt.id;
+                                            const { label: sizeLabel, typeHint } = parseSizeLabel(opt.size, language as any);
+                                            const mainLabel  = sizeLabel || `₪${Number(opt.price).toFixed(0)}`;
+                                            const unitBadge  = typeHint;
+
+                                            return (
+                                                <button
+                                                    key={opt.id}
+                                                    type="button"
+                                                    onClick={() => handleSelectOption(opt)}
+                                                    disabled={opt.is_available === false}
+                                                    className={`flex flex-col items-center gap-0.5 px-4 py-2.5 border rounded-xl text-xs transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-gold-400 text-black border-gold-400 font-extrabold shadow-lg shadow-gold-500/10 scale-105'
+                                                            : opt.is_available === false
+                                                                ? 'bg-zinc-900/40 text-zinc-600 border-zinc-800/50 line-through opacity-50 cursor-not-allowed'
+                                                                : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border-zinc-800'
+                                                    }`}
+                                                    title={
+                                                        opt.is_available === false
+                                                            ? direction === 'rtl' ? 'غير متوفر' : 'Unavailable'
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {opt.image_url && (
+                                                        <span
+                                                            className={`w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0 mb-1 ${
+                                                                isSelected ? 'border-black/30' : 'border-zinc-700'
+                                                            }`}
+                                                        >
+                                                            <img
+                                                                src={opt.image_url}
+                                                                alt={mainLabel}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </span>
+                                                    )}
+
+                                                    {unitBadge && (
+                                                        <span
+                                                            className={`text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded-full mb-0.5 ${
+                                                                isSelected
+                                                                    ? 'bg-black/20 text-black'
+                                                                    : 'bg-zinc-800 text-zinc-500'
+                                                            }`}
+                                                        >
+                                                            {unitBadge}
+                                                        </span>
+                                                    )}
+
+                                                    <span className="font-semibold">{mainLabel}</span>
+
                                                     <span
                                                         className={`text-[10px] font-bold ${
                                                             isSelected ? 'text-black/70' : 'text-gold-400'
